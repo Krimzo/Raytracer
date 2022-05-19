@@ -17,10 +17,11 @@ namespace kl {
 
 		ALL ray() {}
 		ALL ray(const kl::float3& origin, const kl::float3& direction) : origin(origin), direction(direction.normalize()) {}
-		ALL ray(const kl::camera& cam, const kl::float2& ndc) : origin(cam.position) {
-			const kl::float4 pixelDir = cam.matrix().inverse() * kl::float4(ndc, 1.0f, 1.0f);
+		ALL ray(const kl::float3& origin, const kl::mat4& invCamMat, const kl::float2& ndc) : origin(origin) {
+			const kl::float4 pixelDir = invCamMat * kl::float4(ndc, 1.0f, 1.0f);
 			direction = (pixelDir / pixelDir.w).xyz().normalize();
 		}
+		ALL ray(const kl::camera& cam, const kl::float2& ndc) : ray(cam.position, cam.matrix().inverse(), ndc) {}
 
 		// Intersection with a plane
 		ALL bool intersect(const kl::plane& plane, kl::float3* outInter) const {

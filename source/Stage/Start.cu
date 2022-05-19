@@ -7,7 +7,7 @@ void Raytracer::Start() {
 	Raytracer::meshes.push_back(Raytracer::Mesh("resource/meshes/pyramid.obj"));
 
 	Raytracer::textures.push_back(Raytracer::Texture(kl::image(1, kl::colors::crimson)));
-	Raytracer::textures.push_back(Raytracer::Texture(kl::image(1, kl::colors::wheat)));
+	Raytracer::textures.push_back(Raytracer::Texture(kl::image(1, kl::colors::gray)));
 	Raytracer::textures.push_back(Raytracer::Texture(kl::image("resource/textures/checkers.png")));
 	Raytracer::textures.push_back(Raytracer::Texture(kl::image("resource/textures/dogo.png")));
 

@@ -148,7 +148,7 @@ namespace kl {
 			data[12] = 0.0f; data[13] = 0.0f; data[14] = 0.0f; data[15] = 1.0f;
 		}
 
-		// Returns inverse matrix if possible
+		// Returns inverse matrix
 		ALL kl::mat4 inverse() const {
 			kl::mat4 inv;
 			inv[0] = data[5] * data[10] * data[15] -
@@ -247,17 +247,7 @@ namespace kl {
 				data[4] * data[2] * data[9] +
 				data[8] * data[1] * data[6] -
 				data[8] * data[2] * data[5];
-
-			// Det calc
-			const float det = data[0] * inv[0] + data[1] * inv[4] + data[2] * inv[8] + data[3] * inv[12];
-
-			// Det check
-			if (det == 0.0f) {
-				return {};
-			}
-
-			// Return
-			return inv.div(det);
+			return inv.div(data[0] * inv[0] + data[1] * inv[4] + data[2] * inv[8] + data[3] * inv[12]);
 		}
 
 		// Returns a translation matrix

@@ -17,7 +17,8 @@ void Raytracer::Update() {
 
 	// Trace
 	kl::cuda::Exec(Kernels::Raytrace, pixelBuffer.len, pixelBuffer.buffer, pixelBuffer.size,
-		Raytracer::camera, Raytracer::entities.pointer(), Raytracer::entities.size());
+		Raytracer::camera.position, Raytracer::camera.matrix().inverse(),
+		Raytracer::entities.pointer(), Raytracer::entities.size());
 
 	// Draw texture
 	static kl::image tempPixelBuffer(pixelBuffer.size);
