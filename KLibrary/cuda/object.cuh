@@ -18,21 +18,27 @@ namespace kl::cuda {
 		object(const object& obj) : object() {
 			operator=(obj);
 		}
-		T& operator=(const T& obj) {
+		void operator=(const T& obj) {
 			*buff = obj;
 		}
-		T& operator=(const object& obj) {
+		void operator=(const object& obj) {
 			*buff = *obj.buff;
 		}
 		~object() {
 			kl::cuda::free(buff);
 		}
 
-		operator T& () {
+		T& operator*() {
 			return *buff;
 		}
-		operator const T& () const {
+		const T& operator*() const {
 			return *buff;
+		}
+		T* operator->() {
+			return buff;
+		}
+		const T* operator->() const {
+			return buff;
 		}
 	};
 }

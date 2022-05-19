@@ -36,7 +36,7 @@ namespace kl {
 		}
 
 		// Intersection with a triangle
-		ALL bool intersect(const kl::triangle& triangle, kl::vertex* outVert) const {
+		ALL bool intersect(const kl::triangle& triangle, kl::float3* outInters) const {
 			const kl::float3 edge1 = triangle.b.world - triangle.a.world;
 			const kl::float3 edge2 = triangle.c.world - triangle.a.world;
 
@@ -58,8 +58,8 @@ namespace kl {
 
 			const float t = edge2.dot(q) * f;
 			if (t > 0.0f) {
-				if (outVert) {
-					*outVert = triangle.interpolate(origin + direction * t);
+				if (outInters) {
+					*outInters = origin + direction * t;
 				}
 				return true;
 			}

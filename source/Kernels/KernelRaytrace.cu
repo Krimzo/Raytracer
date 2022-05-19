@@ -7,14 +7,14 @@ GPU kl::float2 GetNDC(size_t ind, const kl::int2& screenSize) {
 }
 
 GPU bool RayCanHit(const kl::ray& ray, const Raytracer::Entity& entity) {
-	return ray.intersect({ entity.position, entity.mesh.computed.far });
+	return ray.intersect({ entity.position, entity.computed.far.x });
 }
 
 GPU bool TraceShadow(const kl::ray& ray, Raytracer::Entity* entities, size_t entityCount) {
 	for (size_t e = 0; e < entityCount; e++) {
 		if (RayCanHit(ray, entities[e])) {
-			for (size_t t = 0; t < entities[e].mesh.computed.size; t++) {
-				if (ray.intersect(entities[e].mesh.computed.buffer[t], nullptr)) {
+			for (size_t t = 0; t < entities[e].computed.size; t++) {
+				if (ray.intersect(entities[e].computed.buffer[t], nullptr)) {
 					return true;
 				}
 			}
@@ -32,52 +32,50 @@ GPU kl::color GetColor(kl::color* textureBuffer, const kl::int2& textureSize, co
 }
 
 GPU kl::color TraceRay(const kl::ray& ray, Raytracer::Entity* entities, size_t entityCount, size_t depth) {
-	kl::color rayColor = { 125, 165, 180 };
+	kl::color rayColor = { 50, 50, 50 };
 
 	float interDepth = INFINITY;
-	kl::vertex interVert;
-
-	kl::color* textureBuffer = nullptr;
-	kl::int2 textureSize;
-	float textureRoughness = 1.0f;
+	Raytracer::Entity* entity = nullptr;
+	kl::triangle* intersTri = nullptr;
+	kl::float3 intersPoint = {};
 
 	for (size_t e = 0; e < entityCount; e++) {
 		if (RayCanHit(ray, entities[e])) {
-			for (size_t t = 0; t < entities[e].mesh.computed.size; t++) {
-				kl::vertex tempVert;
-				if (ray.intersect(entities[e].mesh.computed.buffer[t], &tempVert)) {
-					const float tempDepth = (tempVert.world - ray.origin).length();
+			for (size_t t = 0; t < entities[e].computed.size; t++) {
+				kl::float3 tempPoint;
+				if (ray.intersect(entities[e].computed.buffer[t], &tempPoint)) {
+					const float tempDepth = (tempPoint - ray.origin).length();
 					if (tempDepth < interDepth) {
 						interDepth = tempDepth;
-						interVert = tempVert;
-						textureBuffer = entities[e].texture.buffer;
-						textureSize = entities[e].texture.size;
-						textureRoughness = entities[e].texture.roughness;
+						entity = entities + e;
+						intersTri = entity->computed.buffer + t;
+						intersPoint = tempPoint;
 					}
 				}
 			}
 		}
 	}
 
-	if (interDepth < INFINITY) {
+	if (entity) {
 		const kl::float3 sunDir = kl::float3(1.0f, -0.25f, 0.0f).normalize();
 
-		const kl::float3 offsetWorld = interVert.world + (interVert.normal * 1e-5f);
+		const kl::vertex intersVert = intersTri->interpolate(intersPoint);
+		const kl::float3 offsetWorld = intersVert.world + (intersVert.normal * 1e-5f);
 
 		const kl::float3 ambient = 0.075f;
-		const kl::float3 diffuse = max(sunDir.negate().dot(interVert.normal), 0.0f);
+		const kl::float3 diffuse = max(sunDir.negate().dot(intersVert.normal), 0.0f);
 		const bool inShadow = TraceShadow({ offsetWorld, sunDir.negate() }, entities, entityCount);
 
 		const kl::float3 fullLight = ambient + (diffuse * !inShadow);
 
-		rayColor = GetColor(textureBuffer, textureSize, interVert.texture);
+		rayColor = GetColor(entity->texture->buffer, entity->texture->size, intersVert.texture);
 		rayColor.r = byte(min(rayColor.r * fullLight.r, 255.0f));
 		rayColor.g = byte(min(rayColor.g * fullLight.g, 255.0f));
 		rayColor.b = byte(min(rayColor.b * fullLight.b, 255.0f));
 
-		if (depth > 1 && textureRoughness < 1.0f) {
-			const kl::color reflectColor = TraceRay({ offsetWorld, ray.direction.reflect(interVert.normal) }, entities, entityCount, depth - 1);
-			rayColor = reflectColor.mix(rayColor, textureRoughness);
+		if (depth > 1 && entity->roughness < 1.0f) {
+			const kl::color reflectColor = TraceRay({ offsetWorld, ray.direction.reflect(intersVert.normal) }, entities, entityCount, depth - 1);
+			rayColor = reflectColor.mix(rayColor, entity->roughness);
 		}
 	}
 

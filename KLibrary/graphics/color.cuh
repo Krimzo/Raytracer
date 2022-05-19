@@ -37,17 +37,13 @@ namespace kl {
 			return kl::color(255 - r, 255 - g, 255 - b, a);
 		}
 		ALL char toASCII() const {
-			static const char asciiTable[10] = { '@', '%', '#', 'x', '+', '=', ':', '-', '.', ' ' };
-			static const float toSatur = 9.0f / 255.0f;
-			return asciiTable[int(grayscale().r * toSatur)];
+			const char asciiTable[10] = { '@', '%', '#', 'x', '+', '=', ':', '-', '.', ' ' };
+			return asciiTable[min(int(grayscale().r * 0.035294117f), 255)];
 		}
 
 		ALL kl::color mix(const kl::color& col, float ratio) const {
-			// Calc r and ir
 			ratio = min(max(ratio, 0.0f), 1.0f);
 			const float iratio = 1.0f - ratio;
-
-			// Calculating mixed color
 			return kl::color(
 				byte(r * iratio) + byte(col.r * ratio),
 				byte(g * iratio) + byte(col.g * ratio),
@@ -55,8 +51,7 @@ namespace kl {
 			);
 		}
 		ALL kl::color mix(const kl::color& col) const {
-			static const float toFloatCol = 1.0f / 255;
-			return mix(col, col.a * toFloatCol);
+			return mix(col, col.a * 0.00392156f);
 		}
 	};
 

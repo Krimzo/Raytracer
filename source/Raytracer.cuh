@@ -14,18 +14,18 @@ namespace Raytracer {
 	inline float deltaT = 0.0f;
 	inline float elapsedT = 0.0f;
 
-	inline std::list<Raytracer::Mesh> meshes;
-	inline std::list<Raytracer::Texture> textures;
+	inline std::list<kl::cuda::object<Raytracer::Mesh>> meshes;
+	inline std::list<kl::cuda::object<Raytracer::Texture>> textures;
 	inline kl::cuda::vector<Raytracer::Entity> entities;
 	inline Raytracer::Mesh& GetMesh(size_t ind) {
 		auto iter = meshes.begin();
 		std::advance(iter, ind);
-		return *iter;
+		return **iter;
 	}
 	inline Raytracer::Texture& GetTexture(size_t ind) {
 		auto iter = textures.begin();
 		std::advance(iter, ind);
-		return *iter;
+		return **iter;
 	}
 
 	void SetupInput();

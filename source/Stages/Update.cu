@@ -25,8 +25,8 @@ void ComputePhysics() {
 void PrecomputeTransforms() {
 	size_t triangleCount = 0;
 	for (size_t e = 0; e < Raytracer::entities.size(); e++) {
-		triangleCount += Raytracer::entities[e].mesh.size;
-		Raytracer::entities[e].mesh.computed.far = (Raytracer::entities[e].mesh.far * Raytracer::entities[e].scale).length();
+		triangleCount += Raytracer::entities[e].mesh->size;
+		Raytracer::entities[e].computed.far = (Raytracer::entities[e].mesh->far * Raytracer::entities[e].scale).length();
 	}
 	kl::cuda::Exec(Kernels::Precompute,
 		triangleCount, Raytracer::entities.pointer(), Raytracer::entities.size());
