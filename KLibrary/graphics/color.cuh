@@ -44,7 +44,7 @@ namespace kl {
 
 		ALL kl::color mix(const kl::color& col, float ratio) const {
 			// Calc r and ir
-			ratio = max(min(ratio, 1.0f), 0.0f);
+			ratio = min(max(ratio, 0.0f), 1.0f);
 			const float iratio = 1.0f - ratio;
 
 			// Calculating mixed color

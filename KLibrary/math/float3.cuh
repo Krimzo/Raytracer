@@ -174,5 +174,11 @@ namespace kl {
 			temp.z = (xz - yw + xz - yw) * x + (yz + yz + xw + xw) * y + (z2 - y2 - x2 + w2) * z;
 			return temp;
 		}
+
+		// Reflects the vector
+		ALL kl::float3 reflect(const kl::float3 vec) const {
+			const kl::float3 normal = vec.normalize();
+			return sub(normal * dot(normal) * 2.0f);
+		}
 	};
 }

@@ -15,7 +15,7 @@ inline std::vector<kl::vertex> ParseObjectFile(const String& filePath, bool flip
 	fileStream.open(filePath, std::ios::in);
 	if (!fileStream.is_open()) {
 		std::cout << "Could not open file \"" << filePath << "\"!" << std::endl;
-		return {};
+		exit(69);
 	}
 
 	// Temp load buffers

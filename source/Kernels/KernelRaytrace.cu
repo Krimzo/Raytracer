@@ -31,13 +31,15 @@ GPU kl::color GetColor(kl::color* textureBuffer, const kl::int2& textureSize, co
 	return textureBuffer[texPos.y * textureSize.x + texPos.x];
 }
 
-GPU kl::color TraceRay(const kl::ray& ray, Raytracer::Entity* entities, size_t entityCount) {
-	kl::color rayColor = { 50, 50, 50 };
+GPU kl::color TraceRay(const kl::ray& ray, Raytracer::Entity* entities, size_t entityCount, size_t depth) {
+	kl::color rayColor = { 125, 165, 180 };
 
 	float interDepth = INFINITY;
 	kl::vertex interVert;
+
 	kl::color* textureBuffer = nullptr;
 	kl::int2 textureSize;
+	float textureRoughness = 1.0f;
 
 	for (size_t e = 0; e < entityCount; e++) {
 		if (RayCanHit(ray, entities[e])) {
@@ -50,6 +52,7 @@ GPU kl::color TraceRay(const kl::ray& ray, Raytracer::Entity* entities, size_t e
 						interVert = tempVert;
 						textureBuffer = entities[e].texture.buffer;
 						textureSize = entities[e].texture.size;
+						textureRoughness = entities[e].texture.roughness;
 					}
 				}
 			}
@@ -59,17 +62,23 @@ GPU kl::color TraceRay(const kl::ray& ray, Raytracer::Entity* entities, size_t e
 	if (interDepth < INFINITY) {
 		const kl::float3 sunDir = kl::float3(1.0f, -0.25f, 0.0f).normalize();
 
-		rayColor = GetColor(textureBuffer, textureSize, interVert.texture);
+		const kl::float3 offsetWorld = interVert.world + (interVert.normal * 1e-5f);
 
 		const kl::float3 ambient = 0.075f;
 		const kl::float3 diffuse = max(sunDir.negate().dot(interVert.normal), 0.0f);
-		const bool inShadow = TraceShadow({ interVert.world + (interVert.normal * 1e-5f), sunDir.negate() }, entities, entityCount);
+		const bool inShadow = TraceShadow({ offsetWorld, sunDir.negate() }, entities, entityCount);
 
 		const kl::float3 fullLight = ambient + (diffuse * !inShadow);
 
+		rayColor = GetColor(textureBuffer, textureSize, interVert.texture);
 		rayColor.r = byte(min(rayColor.r * fullLight.r, 255.0f));
 		rayColor.g = byte(min(rayColor.g * fullLight.g, 255.0f));
 		rayColor.b = byte(min(rayColor.b * fullLight.b, 255.0f));
+
+		if (depth > 1 && textureRoughness < 1.0f) {
+			const kl::color reflectColor = TraceRay({ offsetWorld, ray.direction.reflect(interVert.normal) }, entities, entityCount, depth - 1);
+			rayColor = reflectColor.mix(rayColor, textureRoughness);
+		}
 	}
 
 	return rayColor;
@@ -80,6 +89,6 @@ EXEC void Kernels::Raytrace(size_t pixelCount, kl::color* pixelBuffer, kl::int2 
 	if (p < pixelCount) {
 		const kl::float2 ndc = GetNDC(p, screenSize);
 		const kl::ray pixelRay = { camPos, invCam, ndc };
-		pixelBuffer[p] = TraceRay(pixelRay, entities, entityCount);
+		pixelBuffer[p] = TraceRay(pixelRay, entities, entityCount, 3);
 	}
 }
