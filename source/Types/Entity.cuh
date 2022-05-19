@@ -73,7 +73,7 @@ namespace Raytracer {
 		Entity() {}
 		Entity(const Raytracer::Mesh& mesh, const Raytracer::Texture& texture) : mesh(mesh), texture(texture) {}
 
-		void updatePhys(float deltaT) {
+		ALL void updatePhys(float deltaT) {
 			position += velocity * deltaT;
 			rotation += angular * deltaT;
 		}

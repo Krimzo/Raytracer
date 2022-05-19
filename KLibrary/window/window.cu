@@ -275,22 +275,6 @@ bool kl::window::setIcon(const String& filePath) {
 }
 
 // Sets the pixels of the window
-void kl::window::drawImage(const kl::image& toDraw, const kl::int2& position) {
-	// Getting the image size
-	const kl::int2 size = toDraw.size();
-
-	// Setting up the bitmapinfo
-	BITMAPINFO bmpInfo = {};
-	bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	bmpInfo.bmiHeader.biCompression = BI_RGB;
-	bmpInfo.bmiHeader.biBitCount = 32;
-	bmpInfo.bmiHeader.biPlanes = 1;
-	bmpInfo.bmiHeader.biWidth = size.x;
-	bmpInfo.bmiHeader.biHeight = -size.y;
-
-	// Drawing
-	StretchDIBits(dc, position.x, position.y, size.x, size.y, 0, 0, size.x, size.y, toDraw.pointer(), &bmpInfo, DIB_RGB_COLORS, SRCCOPY);
-}
 void kl::window::drawImage(const kl::color* data, const kl::int2& size, const kl::int2& position) {
 	// Setting up the bitmapinfo
 	BITMAPINFO bmpInfo = {};
@@ -303,6 +287,9 @@ void kl::window::drawImage(const kl::color* data, const kl::int2& size, const kl
 
 	// Drawing
 	StretchDIBits(dc, position.x, position.y, size.x, size.y, 0, 0, size.x, size.y, data, &bmpInfo, DIB_RGB_COLORS, SRCCOPY);
+}
+void kl::window::drawImage(const kl::image& toDraw, const kl::int2& position) {
+	drawImage(toDraw.pointer(), toDraw.size(), position);
 }
 
 // Sends null message to the window

@@ -100,8 +100,8 @@ namespace kl {
 		bool setIcon(const String& filePath);
 
 		// Sets the pixels of the window
-		void drawImage(const kl::image& toDraw, const kl::int2& position = { 0, 0 });
-		void drawImage(const kl::color* data, const kl::int2& imgSize, const kl::int2& position = { 0, 0 });
+		void drawImage(const kl::color* data, const kl::int2& imgSize, const kl::int2& position = {});
+		void drawImage(const kl::image& toDraw, const kl::int2& position = {});
 
 		// Sends null message to the window
 		void notify() const;

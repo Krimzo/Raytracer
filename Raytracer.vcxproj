@@ -52,13 +52,14 @@
     <CudaCompile Include="KLibrary\window\keys.cu" />
     <CudaCompile Include="KLibrary\window\mouse.cu" />
     <CudaCompile Include="KLibrary\window\window.cu" />
+    <CudaCompile Include="source\Kernels\KernelPhysics.cu" />
     <CudaCompile Include="source\Kernels\KernelPrecompute.cu" />
     <CudaCompile Include="source\Kernels\KernelRaytrace.cu" />
     <CudaCompile Include="source\Raytracer.cu" />
-    <CudaCompile Include="source\Stage\Input.cu" />
-    <CudaCompile Include="source\Stage\Resize.cu" />
-    <CudaCompile Include="source\Stage\Start.cu" />
-    <CudaCompile Include="source\Stage\Update.cu" />
+    <CudaCompile Include="source\Stages\Input.cu" />
+    <CudaCompile Include="source\Stages\Resize.cu" />
+    <CudaCompile Include="source\Stages\Start.cu" />
+    <CudaCompile Include="source\Stages\Update.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7CEBEF5F-0383-47EA-8618-87F1EAE3C7EF}</ProjectGuid>
