@@ -76,14 +76,12 @@ inline std::vector<kl::vertex> ParseObjectFile(const String& filePath, bool flip
 namespace Raytracer {
 	struct Mesh {
 		size_t size = 0;
-		kl::triangle* original = nullptr;
+		kl::triangle* buffer = nullptr;
 		kl::float3 far = 0.0f;
 
 		Mesh(const std::vector<kl::vertex>& vertices) : size(vertices.size() / 3) {
-			if (cudaMallocManaged(&original, size * sizeof(kl::triangle))) {
-				exit(69);
-			}
-			cudaMemcpy(original, &vertices[0], size * sizeof(kl::triangle), cudaMemcpyHostToDevice);
+			kl::cuda::alloc(buffer, size);
+			kl::cuda::copy(buffer, &vertices[0], size, kl::cuda::transfer::HD);
 			for (auto& vert : vertices) {
 				if (vert.world.length() > far.length()) {
 					far = vert.world;
@@ -92,23 +90,17 @@ namespace Raytracer {
 		}
 		Mesh(const String& filePath) : Mesh(ParseObjectFile(filePath, true)) {}
 		Mesh(const Mesh& obj) : size(obj.size), far(obj.far) {
-			if (cudaMallocManaged(&original, obj.size * sizeof(kl::triangle))) {
-				exit(69);
-			}
-			cudaMemcpy(original, obj.original, obj.size * sizeof(kl::triangle), cudaMemcpyDeviceToDevice);
+			kl::cuda::alloc(buffer, obj.size);
+			kl::cuda::copy(buffer, obj.buffer, obj.size, kl::cuda::transfer::DD);
 		}
 		void operator=(const Mesh& obj) {
-			cudaFree(original);
 			size = obj.size;
 			far = obj.far;
-			if (cudaMallocManaged(&original, obj.size * sizeof(kl::triangle))) {
-				exit(69);
-			}
-			cudaMemcpy(original, obj.original, obj.size * sizeof(kl::triangle), cudaMemcpyDeviceToDevice);
+			kl::cuda::realloc(buffer, obj.size);
+			kl::cuda::copy(buffer, obj.buffer, obj.size, kl::cuda::transfer::DD);
 		}
 		~Mesh() {
-			cudaFree(original);
-			original = nullptr;
+			kl::cuda::free(buffer);
 		}
 	};
 }

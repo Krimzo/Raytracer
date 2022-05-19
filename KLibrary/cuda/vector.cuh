@@ -14,16 +14,12 @@ namespace kl::cuda {
 		vector(size_t size) {
 			resize(size);
 		}
-		vector(const vector<T>& obj) : vector(obj.size()) {
-			if (_buff) {
-				cudaMemcpy(_buff, obj.pointer(), _size * sizeof(T), cudaMemcpyDeviceToDevice);
-			}
+		vector(const vector<T>& obj) : vector(obj._size) {
+			kl::cuda::copy(_buff, obj._buff, _size, kl::cuda::transfer::DD);
 		}
 		vector& operator=(const vector& obj) {
 			resize(obj.size());
-			if (_buff) {
-				cudaMemcpy(_buff, obj.pointer(), _size * sizeof(T), cudaMemcpyDeviceToDevice);
-			}
+			kl::cuda::copy(_buff, obj._buff, _size, kl::cuda::transfer::DD);
 		}
 		~vector() {
 			clear();
@@ -64,25 +60,22 @@ namespace kl::cuda {
 			return _size;
 		}
 
-		bool resize(size_t size) {
-			if (size != _size) {
-				vector<T> copy = *this;
-				clear();
-				cudaMallocManaged(&_buff, size * sizeof(T));
-				if (_buff) {
-					_size = size;
-					cudaMemcpy(_buff, copy.pointer(), copy.size() * sizeof(T), cudaMemcpyDeviceToDevice);
-					return true;
-				}
+		bool resize(size_t newSize) {
+			if (newSize != _size) {
+				T* tempBuffer = nullptr;
+				kl::cuda::alloc(tempBuffer, _size);
+				kl::cuda::copy(tempBuffer, _buff, _size, kl::cuda::transfer::DD);
+				kl::cuda::realloc(_buff, newSize);
+				kl::cuda::copy(_buff, tempBuffer, std::min(_size, newSize), kl::cuda::transfer::DD);
+				kl::cuda::free(tempBuffer);
+				_size = newSize;
+				return true;
 			}
 			return false;
 		}
 		void clear() {
-			if (_buff) {
-				cudaFree(_buff);
-				_buff = nullptr;
-				_size = 0;
-			}
+			kl::cuda::free(_buff);
+			_size = 0;
 		}
 
 		T& push_back(const T& obj) {
@@ -92,14 +85,10 @@ namespace kl::cuda {
 		}
 
 		void toCPU(T* cpuBuff, size_t size = 0) const {
-			if (_buff && cpuBuff) {
-				cudaMemcpy(cpuBuff, _buff, ((size > 0 && size <= _size) ? size : _size) * sizeof(T), cudaMemcpyDeviceToHost);
-			}
+			kl::cuda::copy(cpuBuff, _buff, (size > 0 && size < _size) ? size : _size, kl::cuda::transfer::DH);
 		}
 		void fromCPU(const T* cpuBuff, size_t size = 0) {
-			if (_buff && cpuBuff) {
-				cudaMemcpy(_buff, cpuBuff, ((size > 0 && size <= _size) ? size : _size) * sizeof(T), cudaMemcpyHostToDevice);
-			}
+			kl::cuda::copy(_buff, cpuBuff, (size > 0 && size < _size) ? size : _size, kl::cuda::transfer::HD);
 		}
 
 		void operator>>(T* cpuBuff) const {

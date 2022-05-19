@@ -7,19 +7,14 @@ GPU kl::float2 GetNDC(size_t ind, const kl::int2& screenSize) {
 }
 
 GPU bool RayCanHit(const kl::ray& ray, const Raytracer::Entity& entity) {
-	return ray.intersect({ entity.position, (entity.meshFar * entity.scale).length() });
+	return ray.intersect({ entity.position, entity.mesh.computed.far });
 }
 
 GPU bool TraceShadow(const kl::ray& ray, Raytracer::Entity* entities, size_t entityCount) {
 	for (size_t e = 0; e < entityCount; e++) {
 		if (RayCanHit(ray, entities[e])) {
-			for (size_t t = 0; t < entities[e].meshSize; t++) {
-				const kl::mat4 entMat = entities[e].matrix();
-				kl::triangle tempTri = entities[e].meshOrig[t];
-				tempTri.a.world = (entMat * kl::float4(tempTri.a.world, 1.0f)).xyz();
-				tempTri.b.world = (entMat * kl::float4(tempTri.b.world, 1.0f)).xyz();
-				tempTri.c.world = (entMat * kl::float4(tempTri.c.world, 1.0f)).xyz();
-				if (ray.intersect(tempTri, nullptr)) {
+			for (size_t t = 0; t < entities[e].mesh.computed.size; t++) {
+				if (ray.intersect(entities[e].mesh.computed.buffer[t], nullptr)) {
 					return true;
 				}
 			}
@@ -46,24 +41,15 @@ GPU kl::color TraceRay(const kl::ray& ray, Raytracer::Entity* entities, size_t e
 
 	for (size_t e = 0; e < entityCount; e++) {
 		if (RayCanHit(ray, entities[e])) {
-			for (size_t t = 0; t < entities[e].meshSize; t++) {
-				const kl::mat4 entMat = entities[e].matrix();
-				kl::triangle tempTri = entities[e].meshOrig[t];
-				tempTri.a.world = (entMat * kl::float4(tempTri.a.world, 1.0f)).xyz();
-				tempTri.b.world = (entMat * kl::float4(tempTri.b.world, 1.0f)).xyz();
-				tempTri.c.world = (entMat * kl::float4(tempTri.c.world, 1.0f)).xyz();
-				tempTri.a.normal = (entMat * kl::float4(tempTri.a.normal, 0.0f)).xyz().normalize();
-				tempTri.b.normal = (entMat * kl::float4(tempTri.b.normal, 0.0f)).xyz().normalize();
-				tempTri.c.normal = (entMat * kl::float4(tempTri.c.normal, 0.0f)).xyz().normalize();
-
+			for (size_t t = 0; t < entities[e].mesh.computed.size; t++) {
 				kl::vertex tempVert;
-				if (ray.intersect(tempTri, &tempVert)) {
+				if (ray.intersect(entities[e].mesh.computed.buffer[t], &tempVert)) {
 					const float tempDepth = (tempVert.world - ray.origin).length();
 					if (tempDepth < interDepth) {
 						interDepth = tempDepth;
 						interVert = tempVert;
-						textureBuffer = entities[e].textureBuffer;
-						textureSize = entities[e].textureSize;
+						textureBuffer = entities[e].texture.buffer;
+						textureSize = entities[e].texture.size;
 					}
 				}
 			}

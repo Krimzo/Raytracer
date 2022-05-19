@@ -6,14 +6,11 @@
 namespace kl::cuda {
 	template<typename T> class object {
 	private:
-		T* val = nullptr;
+		T* buff = nullptr;
 
 	public:
 		object() {
-			if (cudaMallocManaged(&val, sizeof(T))) {
-				std::cout << "Could not allocate " << sizeof(T) << " bytes of gpu memory!" << std::endl;
-				exit(69);
-			}
+			kl::cuda::alloc(buff, 1);
 		}
 		object(const T& obj) : object() {
 			operator=(obj);
@@ -22,21 +19,20 @@ namespace kl::cuda {
 			operator=(obj);
 		}
 		T& operator=(const T& obj) {
-			*val = obj;
+			*buff = obj;
 		}
 		T& operator=(const object& obj) {
-			*val = *obj.val;
+			*buff = *obj.buff;
 		}
 		~object() {
-			cudaFree(val);
-			val = nullptr;
+			kl::cuda::free(buff);
 		}
 
-		operator T* () const {
-			return val;
+		operator T& () {
+			return *buff;
 		}
-		operator T& () const {
-			return *val;
+		operator const T& () const {
+			return *buff;
 		}
 	};
 }

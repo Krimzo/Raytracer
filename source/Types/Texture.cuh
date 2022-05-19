@@ -10,27 +10,21 @@ namespace Raytracer {
 		size_t len = 0;
 
 		Texture(const kl::int2& size) : size(size), len(size.x* size.y) {
-			if (cudaMallocManaged(&buffer, len * sizeof(kl::color))) {
-				exit(69);
-			}
+			kl::cuda::alloc(buffer, len);
 		}
 		Texture(const kl::color* pixels, const kl::int2& size) : Texture(size) {
-			cudaMemcpy(buffer, pixels, len * sizeof(kl::color), cudaMemcpyHostToDevice);
+			kl::cuda::copy(buffer, pixels, len, kl::cuda::transfer::HD);
 		}
 		Texture(const kl::image& img) : Texture(img.pointer(), img.size()) {}
 		Texture(const Texture& obj) : Texture(obj.buffer, obj.size) {}
 		void operator=(const Texture& obj) {
 			size = obj.size;
 			len = obj.len;
-			cudaFree(buffer);
-			if (cudaMallocManaged(&buffer, obj.len * sizeof(kl::color))) {
-				exit(69);
-			}
-			cudaMemcpy(buffer, obj.buffer, obj.len * sizeof(kl::color), cudaMemcpyDeviceToDevice);
+			kl::cuda::realloc(buffer, obj.len);
+			kl::cuda::copy(buffer, obj.buffer, obj.len, kl::cuda::transfer::DD);
 		}
 		~Texture() {
-			cudaFree(buffer);
-			buffer = nullptr;
+			kl::cuda::free(buffer);
 		}
 	};
 }
