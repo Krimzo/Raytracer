@@ -77,7 +77,7 @@ namespace Raytracer {
 	struct Mesh {
 		size_t size = 0;
 		kl::triangle* buffer = nullptr;
-		kl::float3 far = INFINITY;
+		kl::float3 far = 0.0f;
 
 		Mesh(size_t size) : size(size) {
 			kl::cuda::alloc(buffer, size);
