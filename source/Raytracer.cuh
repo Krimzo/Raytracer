@@ -1,5 +1,8 @@
 #pragma once
 
+#include <list>
+#include <map>
+#include <iomanip>
 #include "Types/Entity.cuh"
 
 
@@ -32,4 +35,28 @@ namespace Raytracer {
 	void Start();
 	void Update();
 	void Resize(const kl::int2& newSize);
+
+	namespace Debug {
+		inline std::list<String> messages;
+		inline std::unordered_map<String, float> times;
+		inline float startTime = 0.0f;
+		inline void TimeItStart() {
+			startTime = timer.elapsed();
+		}
+		inline void TimeItEnd(const String& message) {
+			if (times.find(message) == times.end()) {
+				messages.push_back(message);
+			}
+			times[message] = timer.elapsed() - startTime;
+		}
+		inline void DisplayTimes() {
+			std::stringstream ss;
+			ss << std::fixed << std::setprecision(2);
+			for (auto& mes : messages) {
+				ss << "[" << mes << " " << std::setw(5) << (times[mes] * 1e3f) << "] ";
+			}
+			ss << "(FPS " << int(1.0f / deltaT) << ") ";
+			win.setTitle(ss.str());
+		}
+	}
 }

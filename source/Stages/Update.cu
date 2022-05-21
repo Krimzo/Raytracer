@@ -2,21 +2,6 @@
 #include "Kernels/Kernels.cuh"
 
 
-#define LOG_TIMES_
-void TimeIt(const String& message, bool endOfFrame = false) {
-#ifdef LOG_TIMES
-	static float lastElapsed = 0.0f;
-	static size_t frameCounter = 0;
-	const float elapsed = Raytracer::timer.elapsed() - lastElapsed;
-	std::cout << "Frame: " << frameCounter << ", " << message << " time: " << elapsed << std::endl;
-	if (endOfFrame) {
-		frameCounter++;
-		std::cout << std::endl;
-	}
-	lastElapsed = Raytracer::timer.elapsed();
-#endif
-}
-
 void ComputePhysics() {
 	kl::cuda::Exec(Kernels::Physics,
 		Raytracer::entities.size(), Raytracer::entities.pointer(), Raytracer::deltaT);
@@ -53,21 +38,25 @@ void Raytracer::Update() {
 	elapsedT = timer.elapsed();
 
 	// Physics
+	Raytracer::Debug::TimeItStart();
 	ComputePhysics();
-	TimeIt("Physics");
+	Raytracer::Debug::TimeItEnd("Physics");
 
 	// Precompute
+	Raytracer::Debug::TimeItStart();
 	PrecomputeTransforms();
-	TimeIt("Precompute");
+	Raytracer::Debug::TimeItEnd("Precompute");
 
 	// Trace
+	Raytracer::Debug::TimeItStart();
 	Raytrace();
-	TimeIt("Trace");
+	Raytracer::Debug::TimeItEnd("Trace");
 
 	// Draw texture
+	Raytracer::Debug::TimeItStart();
 	DrawFrame();
-	TimeIt("Draw", true);
+	Raytracer::Debug::TimeItEnd("Draw");
 
 	// FPS
-	win.setTitle(std::to_string(int(1.0f / deltaT)));
+	Raytracer::Debug::DisplayTimes();
 }
