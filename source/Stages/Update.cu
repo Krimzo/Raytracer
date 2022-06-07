@@ -21,7 +21,7 @@ void Raytrace() {
 	kl::cuda::Exec(Kernels::Raytrace,
 		Raytracer::pixelBuffer.len, Raytracer::pixelBuffer.buffer, Raytracer::pixelBuffer.size,
 		Raytracer::camera.position, Raytracer::camera.matrix().inverse(),
-		Raytracer::entities.pointer(), Raytracer::entities.size());
+		Raytracer::entities.pointer(), Raytracer::entities.size(), Raytracer::sunDir.normalize());
 }
 
 void DrawFrame() {

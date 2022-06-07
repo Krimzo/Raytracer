@@ -2,7 +2,7 @@
 
 
 EXEC void Kernels::Precompute(size_t triangleCount, Raytracer::Entity* entities, size_t entityCount) {
-	const size_t i = kl::cuda::Index();
+	const size_t i = kl::cuda::GetX();
 	if (i < triangleCount) {
 		size_t leftTrCount = 0;
 		size_t rightTrCount = 0;

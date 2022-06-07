@@ -50,13 +50,19 @@ namespace kl::cuda {
 		return false;
 	}
 
-	inline GPU size_t Index() {
+	inline GPU size_t GetX() {
 		return size_t(blockIdx.x) * blockDim.x + threadIdx.x;
 	}
+	inline GPU size_t GetY() {
+		return size_t(blockIdx.y) * blockDim.y + threadIdx.y;
+	}
+	inline GPU size_t GetZ() {
+		return size_t(blockIdx.z) * blockDim.z + threadIdx.z;
+	}
 
-	inline size_t execThreadsPerBlock = 128;
+	inline size_t threadsPerBlock = 256;
 	template<typename T, typename... Args> inline void Exec(const T& kernel, const size_t& runs, const Args&... args) {
-		kernel << <(runs / execThreadsPerBlock) + 1, execThreadsPerBlock >> > (runs, args...);
+		kernel << <(runs / threadsPerBlock) + 1, threadsPerBlock >> > (runs, args...);
 		cudaDeviceSynchronize();
 	}
 }

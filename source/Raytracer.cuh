@@ -12,10 +12,7 @@ namespace Raytracer {
 	inline Raytracer::Texture pixelBuffer = kl::int2{ 1600, 900 };
 
 	inline kl::camera camera;
-
-	inline kl::timer timer;
-	inline float deltaT = 0.0f;
-	inline float elapsedT = 0.0f;
+	inline kl::float3 sunDir = { 1.0f, -0.25f, 0.0f };
 
 	inline std::list<kl::cuda::object<Raytracer::Mesh>> meshes;
 	inline std::list<kl::cuda::object<Raytracer::Texture>> textures;
@@ -30,6 +27,10 @@ namespace Raytracer {
 		std::advance(iter, ind);
 		return **iter;
 	}
+
+	inline kl::timer timer;
+	inline float deltaT = 0.0f;
+	inline float elapsedT = 0.0f;
 
 	void SetupInput();
 	void Start();
@@ -53,7 +54,7 @@ namespace Raytracer {
 			std::stringstream ss;
 			ss << std::fixed << std::setprecision(2);
 			for (auto& mes : messages) {
-				ss << "[" << mes << " " << std::setw(5) << (times[mes] * 1e3f) << "] ";
+				ss << "[" << mes << " " << (times[mes] * 1e3f) << "] ";
 			}
 			ss << "(FPS " << int(1.0f / deltaT) << ") ";
 			win.setTitle(ss.str());

@@ -32,7 +32,7 @@ GPU kl::color GetColor(kl::color* textureBuffer, const kl::int2& textureSize, co
 	return textureBuffer[texPos.y * textureSize.x + texPos.x];
 }
 
-GPU kl::color TraceRay(const kl::ray& ray, Raytracer::Entity* entities, size_t entityCount, size_t depth) {
+GPU kl::color TraceRay(const kl::ray& ray, Raytracer::Entity* entities, size_t entityCount, size_t depth, const kl::float3& sunDir) {
 	float interDepth = INFINITY;
 	Raytracer::Entity* entity = nullptr;
 	kl::triangle* intersTri = nullptr;
@@ -54,37 +54,49 @@ GPU kl::color TraceRay(const kl::ray& ray, Raytracer::Entity* entities, size_t e
 		}
 	}
 
-	kl::color rayColor = { 50, 50, 50 };
-	if (entity) {
-		const kl::float3 sunDir = kl::float3(1.0f, -0.25f, 0.0f).normalize();
+	/* constants */
+	const kl::color skyTopColor = { 115, 190, 225 };
+	const kl::color skyBottomColor = { 200, 200, 200 };
+	const kl::float3 ambient = 0.075f;
+	const kl::color sunDiffColor = { 255, 255, 255 };
+	const kl::color sunSkyColor = { 250, 230, 195 };
+	const kl::float2 sunRadiuses = { 0.75f, 1.55f };
 
+	kl::color rayColor;
+	if (entity) {
 		const kl::vertex intersVert = intersTri->interpolate(intersPoint);
 		const kl::float3 offsetWorld = intersVert.world + (intersVert.normal * 1e-5f);
 
-		const kl::float3 ambient = 0.075f;
-		const kl::float3 diffuse = max(sunDir.negate().dot(intersVert.normal), 0.0f);
+		const kl::float3 diffuse = kl::float3(sunDiffColor) * max(sunDir.negate().dot(intersVert.normal), 0.0f);
 		const bool inShadow = TraceShadow({ offsetWorld, sunDir.negate() }, entities, entityCount);
 
 		const kl::float3 fullLight = ambient + (diffuse * !inShadow);
-
 		rayColor = GetColor(entity->texture->buffer, entity->texture->size, intersVert.texture);
 		rayColor.r = byte(min(rayColor.r * fullLight.r, 255.0f));
 		rayColor.g = byte(min(rayColor.g * fullLight.g, 255.0f));
 		rayColor.b = byte(min(rayColor.b * fullLight.b, 255.0f));
 
 		if (depth > 1 && entity->roughness < 1.0f) {
-			const kl::color reflectColor = TraceRay({ offsetWorld, ray.direction.reflect(intersVert.normal) }, entities, entityCount, depth - 1);
+			const kl::color reflectColor = TraceRay({ offsetWorld, ray.direction.reflect(intersVert.normal) }, entities, entityCount, depth - 1, sunDir);
 			rayColor = reflectColor.mix(rayColor, entity->roughness);
 		}
+	}
+	else {
+		const float skyMixValue = (-ray.direction.dot({ 0.0f, 1.0f, 0.0f }) + 1.0f) * 0.5f;
+		rayColor = skyTopColor.mix(skyBottomColor, skyMixValue);
+
+		const float sunAngle = ray.direction.angle(sunDir.negate());
+		const float sunMixValue = (sunAngle - sunRadiuses.x) / (sunRadiuses.y - sunRadiuses.x);
+		rayColor = sunSkyColor.mix(rayColor, sunMixValue);
 	}
 	return rayColor;
 }
 
-EXEC void Kernels::Raytrace(size_t pixelCount, kl::color* pixelBuffer, kl::int2 screenSize, kl::float3 camPos, kl::mat4 invCam, Raytracer::Entity* entities, size_t entityCount) {
-	const size_t i = kl::cuda::Index();
+EXEC void Kernels::Raytrace(size_t pixelCount, kl::color* pixelBuffer, kl::int2 screenSize, kl::float3 camPos, kl::mat4 invCam, Raytracer::Entity* entities, size_t entityCount, kl::float3 sunDir) {
+	const size_t i = kl::cuda::GetX();
 	if (i < pixelCount) {
 		const kl::float2 ndc = GetNDC(i, screenSize);
 		const kl::ray pixelRay = { camPos, invCam, ndc };
-		pixelBuffer[i] = TraceRay(pixelRay, entities, entityCount, 3);
+		pixelBuffer[i] = TraceRay(pixelRay, entities, entityCount, 3, sunDir);
 	}
 }
