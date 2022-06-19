@@ -3,5 +3,6 @@
 .vs
 
 # Compile
-/bin
-/inter
+bin
+inter
+x64

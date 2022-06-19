@@ -38,7 +38,7 @@ void RotationSetup() {
 	Raytracer::win.mouse.rmb.down = [&]() {
 		if (camMoving) {
 			// Window center
-			const kl::int2 frameCenter = Raytracer::win.getCenter();
+			const kl::int2 frameCenter = Raytracer::win.center();
 
 			// First click jump fix
 			if (firstClick) {

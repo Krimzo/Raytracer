@@ -1,12 +1,9 @@
 #pragma once
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
 #include "KrimzLib.cuh"
 
 
-inline std::vector<kl::vertex> ParseObjectFile(const String& filePath, bool flipZ) {
+inline std::vector<kl::vertex> ParseObjectFile(const std::string& filePath, bool flipZ) {
 	// Temp vertex buffer
 	std::vector<kl::vertex> vertexData;
 
@@ -27,11 +24,11 @@ inline std::vector<kl::vertex> ParseObjectFile(const String& filePath, bool flip
 	const int zFlip = flipZ ? -1 : 1;
 
 	// Parsing data
-	for (String fileLine; std::getline(fileStream, fileLine);) {
+	for (std::string fileLine; std::getline(fileStream, fileLine);) {
 		// Splitting the string by spaces
-		std::vector<String> lineParts;
+		std::vector<std::string> lineParts;
 		std::stringstream lineStream(fileLine);
-		for (String linePart; std::getline(lineStream, linePart, ' ');) {
+		for (std::string linePart; std::getline(lineStream, linePart, ' ');) {
 			lineParts.push_back(linePart);
 		}
 
@@ -48,9 +45,9 @@ inline std::vector<kl::vertex> ParseObjectFile(const String& filePath, bool flip
 		else if (lineParts[0] == "f") {
 			for (int i = 1; i < 4; i++) {
 				// Getting the world, texture and normal indexes
-				std::vector<String> linePartParts;
+				std::vector<std::string> linePartParts;
 				std::stringstream linePartStream(lineParts[i]);
-				for (String linePartPart; std::getline(linePartStream, linePartPart, '/');) {
+				for (std::string linePartPart; std::getline(linePartStream, linePartPart, '/');) {
 					linePartParts.push_back(linePartPart);
 				}
 
@@ -75,22 +72,22 @@ inline std::vector<kl::vertex> ParseObjectFile(const String& filePath, bool flip
 
 namespace Raytracer {
 	struct Mesh {
-		size_t size = 0;
+		uint64 size = 0;
 		kl::triangle* buffer = nullptr;
 		kl::float3 far = 0.0f;
 
-		Mesh(size_t size) : size(size) {
+		Mesh(uint64 size) : size(size) {
 			kl::cuda::alloc(buffer, size);
 		}
 		Mesh(const std::vector<kl::vertex>& vertices) : Mesh(vertices.size() / 3) {
 			kl::cuda::copy(buffer, &vertices[0], size, kl::cuda::transfer::HD);
 			for (auto& vert : vertices) {
-				if (vert.world.length() > far.length()) {
+				if (vert.world.len() > far.len()) {
 					far = vert.world;
 				}
 			}
 		}
-		Mesh(const String& filePath) : Mesh(ParseObjectFile(filePath, true)) {}
+		Mesh(const std::string& filePath) : Mesh(ParseObjectFile(filePath, true)) {}
 		Mesh(const Mesh& obj) : size(obj.size), far(obj.far) {
 			kl::cuda::alloc(buffer, obj.size);
 			kl::cuda::copy(buffer, obj.buffer, obj.size, kl::cuda::transfer::DD);
@@ -105,7 +102,7 @@ namespace Raytracer {
 			kl::cuda::free(buffer);
 		}
 
-		bool resize(size_t newSize) {
+		bool resize(uint64 newSize) {
 			if (newSize != size) {
 				size = newSize;
 				kl::cuda::realloc(buffer, newSize);

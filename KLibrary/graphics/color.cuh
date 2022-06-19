@@ -3,42 +3,39 @@
 #include <iostream>
 #include <windows.h>
 
-#include "cuda/kcuda.cuh"
+#include "cuda/cu_types.cuh"
 
+
+using byte = unsigned char;
 
 namespace kl {
-	class color {
-	public:
+	struct color {
 		byte b, g, r, a;
 
-		// Constructors
 		ALL color() : b(0), g(0), r(0), a(0) {}
 		ALL color(byte r, byte g, byte b, byte a = 255) : b(b), g(g), r(r), a(a) {}
 
-		// Operator overloading
-		ALL bool equals(const kl::color& obj) const {
+		ALL bool equ(const kl::color& obj) const {
 			return r == obj.r && g == obj.g && b == obj.b && a == obj.a;
 		}
 		ALL bool operator==(const kl::color& obj) const {
-			return this->equals(obj);
+			return equ(obj);
 		}
 		ALL bool operator!=(const kl::color& obj) const {
-			return !this->equals(obj);
+			return !equ(obj);
 		}
 
-		ALL int getInt() const {
-			return *(int*)this;
-		}
-		ALL kl::color grayscale() const {
-			const byte grayValue = byte(r * 0.299f + g * 0.587f + b * 0.114f);
+		ALL kl::color gray() const {
+			const byte grayValue = byte(r * 0.3f + g * 0.585f + b * 0.115f);
 			return kl::color(grayValue, grayValue, grayValue, a);
 		}
 		ALL kl::color invert() const {
 			return kl::color(255 - r, 255 - g, 255 - b, a);
 		}
-		ALL char toASCII() const {
-			const char asciiTable[10] = { '@', '%', '#', 'x', '+', '=', ':', '-', '.', ' ' };
-			return asciiTable[min(int(grayscale().r * 0.035294117f), 255)];
+		ALL char ascii() const {
+			static const char asciiTable[10] = { '@', '%', '#', 'x', '+', '=', ':', '-', '.', ' ' };
+			static const float toSatur = 9.0f / 255.0f;
+			return asciiTable[int(gray().r * toSatur)];
 		}
 
 		ALL kl::color mix(const kl::color& col, float ratio) const {
@@ -51,11 +48,18 @@ namespace kl {
 			);
 		}
 		ALL kl::color mix(const kl::color& col) const {
-			return mix(col, col.a * 0.00392156f);
+			static const float toFloatCol = 1.0f / 255;
+			return mix(col, col.a * toFloatCol);
 		}
 	};
 
-	// Predefined colors
+	// std::cout
+	inline std::ostream& operator<<(std::ostream& os, const kl::color& obj) {
+		os << "\033[38;2;" << int(obj.r) << ";" << int(obj.g) << ";" << int(obj.b) << "m";
+		return os;
+	}
+
+	// Predefined
 	namespace colors {
 		inline const kl::color defaul = kl::color(204, 204, 204);
 		inline const kl::color black = kl::color(0, 0, 0);

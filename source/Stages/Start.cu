@@ -4,7 +4,7 @@
 
 void Raytracer::Start() {
 	Raytracer::meshes.push_back(Raytracer::Mesh("resource/meshes/cube.obj"));
-	Raytracer::meshes.push_back(Raytracer::Mesh("resource/meshes/sphere.obj"));
+	Raytracer::meshes.push_back(Raytracer::Mesh("resource/meshes/pyramid.obj"));
 	Raytracer::meshes.push_back(Raytracer::Mesh("resource/meshes/monke.obj"));
 
 	Raytracer::textures.push_back(Raytracer::Texture(kl::image(1, kl::colors::lgray)));

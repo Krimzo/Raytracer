@@ -7,7 +7,7 @@ namespace Raytracer {
 	struct Texture {
 		kl::color* buffer = nullptr;
 		kl::int2 size = {};
-		size_t len = 0;
+		uint64 len = 0;
 
 		Texture(const kl::int2& size) : size(size), len(size.x* size.y) {
 			kl::cuda::alloc(buffer, len);
@@ -15,7 +15,7 @@ namespace Raytracer {
 		Texture(const kl::color* pixels, const kl::int2& size) : Texture(size) {
 			kl::cuda::copy(buffer, pixels, len, kl::cuda::transfer::HD);
 		}
-		Texture(const kl::image& img) : Texture(img.pointer(), img.size()) {}
+		Texture(const kl::image& img) : Texture(img.data(), img.size()) {}
 		Texture(const Texture& obj) : Texture(obj.buffer, obj.size) {}
 		void operator=(const Texture& obj) {
 			size = obj.size;

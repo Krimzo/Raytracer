@@ -6,11 +6,11 @@
 namespace kl::cuda {
 	template<typename T> class object {
 	private:
-		T* buff = nullptr;
+		T* m_Buffer = nullptr;
 
 	public:
 		object() {
-			kl::cuda::alloc(buff, 1);
+			kl::cuda::alloc(m_Buffer, 1);
 		}
 		object(const T& obj) : object() {
 			operator=(obj);
@@ -19,26 +19,26 @@ namespace kl::cuda {
 			operator=(obj);
 		}
 		void operator=(const T& obj) {
-			*buff = obj;
+			*m_Buffer = obj;
 		}
 		void operator=(const object& obj) {
-			*buff = *obj.buff;
+			*m_Buffer = *obj.m_Buffer;
 		}
 		~object() {
-			kl::cuda::free(buff);
+			kl::cuda::free(m_Buffer);
 		}
 
 		T& operator*() {
-			return *buff;
+			return *m_Buffer;
 		}
 		const T& operator*() const {
-			return *buff;
+			return *m_Buffer;
 		}
 		T* operator->() {
-			return buff;
+			return m_Buffer;
 		}
 		const T* operator->() const {
-			return buff;
+			return m_Buffer;
 		}
 	};
 }

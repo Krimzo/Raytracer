@@ -1,53 +1,54 @@
 #pragma once
 
-#include <windows.h>
-#include "math/float2.cuh"
-#include "math/float3.cuh"
-#include "math/float4.cuh"
-#include "utility/convert.cuh"
+#include "math/vector2.cuh"
+#include "math/vector3.cuh"
+#include "math/vector4.cuh"
+#include "math/matrix2x2.cuh"
+#include "math/matrix3x3.cuh"
+#include "math/matrix4x4.cuh"
 
-#include "cuda/kcuda.cuh"
 
+namespace kl::math {
+	// Returns x from the given y of the line that goes through points a and b
+	template<typename T> ALL inline T lineX(const kl::vector2<T>& a, const kl::vector2<T>& b, const T& y) {
+		return T(((y - a.y) * (b.x - a.x)) / (b.y - a.y) + a.x);
+	}
 
-namespace kl {
-	namespace math {
-		inline const float pi = 3.14159265358979f;
+	// Returns y from the given x of the line that goes through points a and b
+	template<typename T> ALL inline T lineY(const kl::vector2<T>& a, const kl::vector2<T>& b, const T& x) {
+		return T(((b.y - a.y) * (x - a.x)) / (b.x - a.x) + a.y);
+	}
 
-		inline ALL float lineX(const kl::float2& a, const kl::float2& b, float y) {
-			return ((y - a.y) * (b.x - a.x)) / (b.y - a.y) + a.x;
-		}
+	// Euluer/quat angles
+	template<typename T> ALL inline kl::vector4<T> toQuat(const kl::vector3<T>& eul) {
+		const T cr = T(std::cos(kl::math::toRads(eul.x) * 0.5));
+		const T sr = T(std::sin(kl::math::toRads(eul.x) * 0.5));
+		const T cp = T(std::cos(kl::math::toRads(eul.y) * 0.5));
+		const T sp = T(std::sin(kl::math::toRads(eul.y) * 0.5));
+		const T cy = T(std::cos(kl::math::toRads(eul.z) * 0.5));
+		const T sy = T(std::sin(kl::math::toRads(eul.z) * 0.5));
+		return {
+			sr * cp * cy - cr * sp * sy,
+			cr * sp * cy + sr * cp * sy,
+			cr * cp * sy - sr * sp * cy,
+			cr * cp * cy + sr * sp * sy
+		};
+	}
+	template<typename T> ALL inline kl::vector3<T> toEul(const kl::vector4<T>& quat) {
+		const T sinp = T(2.0 * (quat.w * quat.y - quat.z * quat.x));
+		const T sinrCosp = T(2.0 * (quat.w * quat.x + quat.y * quat.z));
+		const T cosrCosp = T(1.0 - 2.0 * (quat.x * quat.x + quat.y * quat.y));
+		const T sinyCosp = T(2.0 * (quat.w * quat.z + quat.x * quat.y));
+		const T cosyCosp = T(1.0 - 2.0 * (quat.y * quat.y + quat.z * quat.z));
+		return {
+			kl::math::toDegs(std::atan2(sinrCosp, cosrCosp)),
+			kl::math::toDegs((std::abs(sinp) >= 1.0) ? std::copysign(1.57079632679, sinp) : std::asin(sinp)),
+			kl::math::toDegs(std::atan2(sinyCosp, cosyCosp))
+		};
+	}
 
-		inline ALL float lineY(const kl::float2& a, const kl::float2& b, float x) {
-			return ((b.y - a.y) * (x - a.x)) / (b.x - a.x) + a.y;
-		}
-
-		inline ALL kl::float4 eulToQuat(const kl::float3& eul) {
-			const float cr = cos(kl::convert::toRadians(eul.x) * 0.5f);
-			const float sr = sin(kl::convert::toRadians(eul.x) * 0.5f);
-			const float cp = cos(kl::convert::toRadians(eul.y) * 0.5f);
-			const float sp = sin(kl::convert::toRadians(eul.y) * 0.5f);
-			const float cy = cos(kl::convert::toRadians(eul.z) * 0.5f);
-			const float sy = sin(kl::convert::toRadians(eul.z) * 0.5f);
-
-			kl::float4 quat;
-			quat.x = sr * cp * cy - cr * sp * sy;
-			quat.y = cr * sp * cy + sr * cp * sy;
-			quat.z = cr * cp * sy - sr * sp * cy;
-			quat.w = cr * cp * cy + sr * sp * sy;
-			return quat;
-		}
-		inline ALL kl::float3 quatToEul(const kl::float4& quat) {
-			const float sinp = 2.0f * (quat.w * quat.y - quat.z * quat.x);
-			const float sinrCosp = 2.0f * (quat.w * quat.x + quat.y * quat.z);
-			const float cosrCosp = 1.0f - 2.0f * (quat.x * quat.x + quat.y * quat.y);
-			const float sinyCosp = 2.0f * (quat.w * quat.z + quat.x * quat.y);
-			const float cosyCosp = 1.0f - 2.0f * (quat.y * quat.y + quat.z * quat.z);
-
-			kl::float3 eul;
-			eul.x = kl::convert::toDegrees(std::atan2(sinrCosp, cosrCosp));
-			eul.y = kl::convert::toDegrees((std::abs(sinp) >= 1.0f) ? std::copysign(1.57079632679f, sinp) : std::asin(sinp));
-			eul.z = kl::convert::toDegrees(std::atan2(sinyCosp, cosyCosp));
-			return eul;
-		}
-	};
+	// minmax
+	template<typename T> ALL inline T minmax(const T& val, const T& minVal, const T& maxVal) {
+		return min(max(val, minVal), maxVal);
+	}
 }

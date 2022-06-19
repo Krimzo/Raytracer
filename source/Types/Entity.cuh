@@ -33,7 +33,7 @@ namespace Raytracer {
 		}
 
 		ALL kl::mat4 matrix() const {
-			return kl::mat4::translate(position) * kl::mat4::rotate(rotation) * kl::mat4::scale(scale);
+			return kl::mat4::translation(position) * kl::mat4::rotation(rotation) * kl::mat4::scaling(scale);
 		}
 	};
 }

@@ -3,44 +3,47 @@
 
 
 void ComputePhysics() {
-	kl::cuda::Exec(Kernels::Physics,
-		Raytracer::entities.size(), Raytracer::entities.pointer(), Raytracer::deltaT);
+	Kernels::physics.runs = uint(Raytracer::entities.size());
+	Kernels::physics.run(Raytracer::entities.size(), Raytracer::entities.pointer(), Raytracer::deltaT);
 }
 
 void PrecomputeTransforms() {
-	size_t triangleCount = 0;
-	for (size_t e = 0; e < Raytracer::entities.size(); e++) {
-		triangleCount += Raytracer::entities[e].mesh->size;
-		Raytracer::entities[e].computed.far = (Raytracer::entities[e].mesh->far * Raytracer::entities[e].scale).length();
+	uint triangleCount = 0;
+	for (uint e = 0; e < Raytracer::entities.size(); e++) {
+		triangleCount += uint(Raytracer::entities[e].mesh->size);
+		Raytracer::entities[e].computed.far = (Raytracer::entities[e].mesh->far * Raytracer::entities[e].scale).len();
 	}
-	kl::cuda::Exec(Kernels::Precompute,
-		triangleCount, Raytracer::entities.pointer(), Raytracer::entities.size());
+	Kernels::precompute.runs = triangleCount;
+	Kernels::precompute.run(triangleCount, Raytracer::entities.pointer(), Raytracer::entities.size());
 }
 
 void Raytrace() {
-	kl::cuda::Exec(Kernels::Raytrace,
-		Raytracer::pixelBuffer.len, Raytracer::pixelBuffer.buffer, Raytracer::pixelBuffer.size,
-		Raytracer::camera.position, Raytracer::camera.matrix().inverse(),
-		Raytracer::entities.pointer(), Raytracer::entities.size(), Raytracer::sunDir.normalize());
+	Kernels::raytrace.runs = uint(Raytracer::pixelBuffer.len);
+	Kernels::raytrace.run(Raytracer::pixelBuffer.len, Raytracer::pixelBuffer.buffer, Raytracer::pixelBuffer.size,
+		Raytracer::camera.position, Raytracer::camera.matrix().inv(),
+		Raytracer::entities.pointer(), Raytracer::entities.size(), Raytracer::sunDir.norm());
 }
 
 void DrawFrame() {
 	static kl::image tempPixelBuffer(Raytracer::pixelBuffer.size);
 	tempPixelBuffer.resize(Raytracer::pixelBuffer.size);
-	kl::cuda::copy(tempPixelBuffer.pointer(), Raytracer::pixelBuffer.buffer,
+	kl::cuda::copy(tempPixelBuffer.data(), Raytracer::pixelBuffer.buffer,
 		Raytracer::pixelBuffer.len, kl::cuda::transfer::DH);
-	Raytracer::win.drawImage(tempPixelBuffer);
+	Raytracer::win.draw(tempPixelBuffer);
 }
 
 void Raytracer::Update() {
 	// Time
-	deltaT = timer.interval();
-	elapsedT = timer.elapsed();
+	deltaT = float(timer.interval());
+	elapsedT = float(timer.elapsed());
 
 	// Physics
 	Raytracer::Debug::TimeItStart();
 	ComputePhysics();
 	Raytracer::Debug::TimeItEnd("Physics");
+
+	// User
+	Raytracer::User();
 
 	// Precompute
 	Raytracer::Debug::TimeItStart();

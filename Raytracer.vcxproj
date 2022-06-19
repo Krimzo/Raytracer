@@ -11,34 +11,44 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="KLibrary\cuda\cu_types.cuh" />
+    <ClInclude Include="KLibrary\cuda\kcuda.cuh" />
+    <ClInclude Include="KLibrary\cuda\kernel.cuh" />
     <ClInclude Include="KLibrary\cuda\object.cuh" />
     <ClInclude Include="KLibrary\cuda\vector.cuh" />
-    <ClInclude Include="KLibrary\geometry\plane.cuh" />
-    <ClInclude Include="KLibrary\geometry\ray.cuh" />
-    <ClInclude Include="KLibrary\geometry\sphere.cuh" />
-    <ClInclude Include="KLibrary\geometry\triangle.cuh" />
-    <ClInclude Include="KLibrary\geometry\vertex.cuh" />
+    <ClInclude Include="KLibrary\gpu\dx_types.cuh" />
+    <ClInclude Include="KLibrary\gpu\gpu.cuh" />
     <ClInclude Include="KLibrary\graphics\color.cuh" />
     <ClInclude Include="KLibrary\graphics\image.cuh" />
+    <ClInclude Include="KLibrary\graphics\video.cuh" />
     <ClInclude Include="KLibrary\KrimzLib.cuh" />
-    <ClInclude Include="KLibrary\libspec\using.cuh" />
-    <ClInclude Include="KLibrary\math\float2.cuh" />
-    <ClInclude Include="KLibrary\math\float3.cuh" />
-    <ClInclude Include="KLibrary\math\float4.cuh" />
-    <ClInclude Include="KLibrary\math\int2.cuh" />
-    <ClInclude Include="KLibrary\math\int3.cuh" />
-    <ClInclude Include="KLibrary\math\int4.cuh" />
-    <ClInclude Include="KLibrary\math\mat3.cuh" />
-    <ClInclude Include="KLibrary\math\mat4.cuh" />
     <ClInclude Include="KLibrary\math\math.cuh" />
-    <ClInclude Include="KLibrary\utility\convert.cuh" />
+    <ClInclude Include="KLibrary\math\matrix.cuh" />
+    <ClInclude Include="KLibrary\math\matrix2x2.cuh" />
+    <ClInclude Include="KLibrary\math\matrix3x3.cuh" />
+    <ClInclude Include="KLibrary\math\matrix4x4.cuh" />
+    <ClInclude Include="KLibrary\math\vector2.cuh" />
+    <ClInclude Include="KLibrary\math\vector3.cuh" />
+    <ClInclude Include="KLibrary\math\vector4.cuh" />
+    <ClInclude Include="KLibrary\render\camera.cuh" />
+    <ClInclude Include="KLibrary\render\plane.cuh" />
+    <ClInclude Include="KLibrary\render\ray.cuh" />
+    <ClInclude Include="KLibrary\render\sphere.cuh" />
+    <ClInclude Include="KLibrary\render\triangle.cuh" />
+    <ClInclude Include="KLibrary\render\vertex.cuh" />
+    <ClInclude Include="KLibrary\utility\async.cuh" />
+    <ClInclude Include="KLibrary\utility\console.cuh" />
+    <ClInclude Include="KLibrary\utility\encrypter.cuh" />
+    <ClInclude Include="KLibrary\utility\file.cuh" />
+    <ClInclude Include="KLibrary\utility\random.cuh" />
+    <ClInclude Include="KLibrary\utility\socket.cuh" />
     <ClInclude Include="KLibrary\utility\time.cuh" />
-    <ClInclude Include="KLibrary\view\camera.cuh" />
+    <ClInclude Include="KLibrary\utility\web.cuh" />
+    <ClInclude Include="KLibrary\window\double_buffer.cuh" />
     <ClInclude Include="KLibrary\window\key.cuh" />
     <ClInclude Include="KLibrary\window\keys.cuh" />
     <ClInclude Include="KLibrary\window\mouse.cuh" />
     <ClInclude Include="KLibrary\window\window.cuh" />
-    <ClInclude Include="KLibrary\cuda\kcuda.cuh" />
     <ClInclude Include="source\Kernels\Kernels.cuh" />
     <ClInclude Include="source\Raytracer.cuh" />
     <ClInclude Include="source\Types\Entity.cuh" />
@@ -46,12 +56,35 @@
     <ClInclude Include="source\Types\Texture.cuh" />
   </ItemGroup>
   <ItemGroup>
+    <CudaCompile Include="KLibrary\gpu\buffer\constant_buffer.cu" />
+    <CudaCompile Include="KLibrary\gpu\buffer\gpu_buffer.cu" />
+    <CudaCompile Include="KLibrary\gpu\gpu.cu" />
+    <CudaCompile Include="KLibrary\gpu\states\depth_state.cu" />
+    <CudaCompile Include="KLibrary\gpu\states\raster_state.cu" />
+    <CudaCompile Include="KLibrary\gpu\states\sampler_state.cu" />
+    <CudaCompile Include="KLibrary\gpu\utility\shaders.cu" />
+    <CudaCompile Include="KLibrary\gpu\utility\texture.cu" />
+    <CudaCompile Include="KLibrary\gpu\utility\vbuffer.cu" />
+    <CudaCompile Include="KLibrary\gpu\views\access_view.cu" />
+    <CudaCompile Include="KLibrary\gpu\views\depth_view.cu" />
+    <CudaCompile Include="KLibrary\gpu\views\shader_view.cu" />
+    <CudaCompile Include="KLibrary\gpu\views\target_view.cu" />
     <CudaCompile Include="KLibrary\graphics\image.cu" />
+    <CudaCompile Include="KLibrary\graphics\video.cu" />
+    <CudaCompile Include="KLibrary\utility\async.cu" />
+    <CudaCompile Include="KLibrary\utility\console.cu" />
+    <CudaCompile Include="KLibrary\utility\encrypter.cu" />
+    <CudaCompile Include="KLibrary\utility\file.cu" />
+    <CudaCompile Include="KLibrary\utility\random.cu" />
+    <CudaCompile Include="KLibrary\utility\socket.cu" />
     <CudaCompile Include="KLibrary\utility\time.cu" />
+    <CudaCompile Include="KLibrary\utility\web.cu" />
+    <CudaCompile Include="KLibrary\window\double_buffer.cu" />
     <CudaCompile Include="KLibrary\window\key.cu" />
     <CudaCompile Include="KLibrary\window\keys.cu" />
     <CudaCompile Include="KLibrary\window\mouse.cu" />
     <CudaCompile Include="KLibrary\window\window.cu" />
+    <CudaCompile Include="KLibrary\window\window_private.cu" />
     <CudaCompile Include="source\Kernels\KernelPhysics.cu" />
     <CudaCompile Include="source\Kernels\KernelPrecompute.cu" />
     <CudaCompile Include="source\Kernels\KernelRaytrace.cu" />
@@ -60,6 +93,7 @@
     <CudaCompile Include="source\Stages\Resize.cu" />
     <CudaCompile Include="source\Stages\Start.cu" />
     <CudaCompile Include="source\Stages\Update.cu" />
+    <CudaCompile Include="source\Stages\User.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7CEBEF5F-0383-47EA-8618-87F1EAE3C7EF}</ProjectGuid>
@@ -82,7 +116,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.6.props" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.7.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -121,6 +155,7 @@
       <Optimization>O2</Optimization>
       <Include>$(SolutionDir)source\;$(SolutionDir)KLibrary\;%(Include)</Include>
       <AdditionalOptions>--std c++17 %(AdditionalOptions)</AdditionalOptions>
+      <GenerateRelocatableDeviceCode>false</GenerateRelocatableDeviceCode>
     </CudaCompile>
     <CudaLink>
       <Optimization>O2</Optimization>
@@ -151,6 +186,7 @@
       <Optimization>O2</Optimization>
       <Include>$(SolutionDir)source\;$(SolutionDir)KLibrary\;%(Include)</Include>
       <AdditionalOptions>--std c++17 %(AdditionalOptions)</AdditionalOptions>
+      <GenerateRelocatableDeviceCode>false</GenerateRelocatableDeviceCode>
     </CudaCompile>
     <CudaLink>
       <Optimization>O2</Optimization>
@@ -158,6 +194,6 @@
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.6.targets" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 11.7.targets" />
   </ImportGroup>
 </Project>

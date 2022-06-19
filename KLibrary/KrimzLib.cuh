@@ -1,42 +1,43 @@
 #pragma once
 
-// Lib specific
-#include "libspec/using.cuh"
 
 // Cuda
 #include "cuda/kcuda.cuh"
+#include "cuda/kernel.cuh"
 #include "cuda/object.cuh"
 #include "cuda/vector.cuh"
 
 // Math
 #include "math/math.cuh"
-#include "math/int2.cuh"
-#include "math/float2.cuh"
-#include "math/float3.cuh"
-#include "math/float4.cuh"
-#include "math/mat3.cuh"
-#include "math/mat4.cuh"
 
 // Graphics
 #include "graphics/color.cuh"
 #include "graphics/image.cuh"
+#include "graphics/video.cuh"
 
 // Utility
-#include "utility/convert.cuh"
+#include "utility/console.cuh"
+#include "utility/encrypter.cuh"
+#include "utility/file.cuh"
+#include "utility/random.cuh"
+#include "utility/socket.cuh"
+#include "utility/async.cuh"
 #include "utility/time.cuh"
-
-// Geometry
-#include "geometry/ray.cuh"
-#include "geometry/plane.cuh"
-#include "geometry/sphere.cuh"
-#include "geometry/vertex.cuh"
-#include "geometry/triangle.cuh"
+#include "utility/web.cuh"
 
 // Window
-#include "window/key.cuh"
 #include "window/keys.cuh"
 #include "window/mouse.cuh"
 #include "window/window.cuh"
+#include "window/double_buffer.cuh"
 
-// View
-#include "view/camera.cuh"
+// DirectX
+#include "gpu/gpu.cuh"
+
+// Render
+#include "render/camera.cuh"
+#include "render/plane.cuh"
+#include "render/sphere.cuh"
+#include "render/vertex.cuh"
+#include "render/triangle.cuh"
+#include "render/ray.cuh"

@@ -1,40 +1,41 @@
 #pragma once
 
 #include "cuda/kcuda.cuh"
+#include "math/math.cuh"
 
 
 namespace kl::cuda {
 	template<typename T> class vector {
 	private:
-		T* _buff = nullptr;
-		size_t _size = 0;
+		T* m_Buffer = nullptr;
+		uint64 m_Size = 0;
 
 	public:
 		vector() {}
-		vector(size_t size) {
+		vector(uint64 size) {
 			resize(size);
 		}
-		vector(const vector<T>& obj) : vector(obj._size) {
-			kl::cuda::copy(_buff, obj._buff, _size, kl::cuda::transfer::DD);
+		vector(const vector<T>& obj) : vector(obj.m_Size) {
+			kl::cuda::copy(m_Buffer, obj.m_Buffer, m_Size, kl::cuda::transfer::DD);
 		}
 		vector& operator=(const vector& obj) {
 			resize(obj.size());
-			kl::cuda::copy(_buff, obj._buff, _size, kl::cuda::transfer::DD);
+			kl::cuda::copy(m_Buffer, obj.m_Buffer, m_Size, kl::cuda::transfer::DD);
 		}
 		~vector() {
 			clear();
 		}
 
-		T& operator[](size_t ind) {
-			if (ind < _size) {
-				return _buff[ind];
+		T& operator[](uint64 ind) {
+			if (ind < m_Size) {
+				return m_Buffer[ind];
 			}
 			std::cout << "Cuda vector out of scope!" << std::endl;
 			exit(69);
 		}
-		const T& operator[](size_t ind) const {
-			if (ind < _size) {
-				return _buff[ind];
+		const T& operator[](uint64 ind) const {
+			if (ind < m_Size) {
+				return m_Buffer[ind];
 			}
 			std::cout << "Cuda vector out of scope!" << std::endl;
 			exit(69);
@@ -47,48 +48,48 @@ namespace kl::cuda {
 			return operator[](0);
 		}
 		T& back() {
-			return operator[](_size - 1);
+			return operator[](m_Size - 1);
 		}
 		const T& back() const {
-			return operator[](_size - 1);
+			return operator[](m_Size - 1);
 		}
 
 		T* pointer() const {
-			return _buff;
+			return m_Buffer;
 		}
-		size_t size() const {
-			return _size;
+		uint64 size() const {
+			return m_Size;
 		}
 
-		bool resize(size_t newSize) {
-			if (newSize != _size) {
+		bool resize(uint64 newSize) {
+			if (newSize != m_Size) {
 				T* tempBuffer = nullptr;
-				kl::cuda::alloc(tempBuffer, _size);
-				kl::cuda::copy(tempBuffer, _buff, _size, kl::cuda::transfer::DD);
-				kl::cuda::realloc(_buff, newSize);
-				kl::cuda::copy(_buff, tempBuffer, std::min(_size, newSize), kl::cuda::transfer::DD);
+				kl::cuda::alloc(tempBuffer, m_Size);
+				kl::cuda::copy(tempBuffer, m_Buffer, m_Size, kl::cuda::transfer::DD);
+				kl::cuda::realloc(m_Buffer, newSize);
+				kl::cuda::copy(m_Buffer, tempBuffer, std::min(m_Size, newSize), kl::cuda::transfer::DD);
 				kl::cuda::free(tempBuffer);
-				_size = newSize;
+				m_Size = newSize;
 				return true;
 			}
 			return false;
 		}
 		void clear() {
-			kl::cuda::free(_buff);
-			_size = 0;
+			kl::cuda::free(m_Buffer);
+			m_Size = 0;
 		}
 
 		T& push_back(const T& obj) {
-			resize(_size + 1);
+			resize(m_Size + 1);
 			back() = obj;
 			return back();
 		}
 
-		void toCPU(T* cpuBuff, size_t size = 0) const {
-			kl::cuda::copy(cpuBuff, _buff, (size > 0 && size < _size) ? size : _size, kl::cuda::transfer::DH);
+		void toCPU(T* cpuBuff, uint64 size = 0) const {
+			kl::cuda::copy(cpuBuff, m_Buffer, (size > 0 && size < m_Size) ? size : m_Size, kl::cuda::transfer::DH);
 		}
-		void fromCPU(const T* cpuBuff, size_t size = 0) {
-			kl::cuda::copy(_buff, cpuBuff, (size > 0 && size < _size) ? size : _size, kl::cuda::transfer::HD);
+		void fromCPU(const T* cpuBuff, uint64 size = 0) {
+			kl::cuda::copy(m_Buffer, cpuBuff, (size > 0 && size < m_Size) ? size : m_Size, kl::cuda::transfer::HD);
 		}
 
 		void operator>>(T* cpuBuff) const {
