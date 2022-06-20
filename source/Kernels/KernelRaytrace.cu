@@ -1,4 +1,4 @@
-#include "Kernels/Kernels.cuh"
+#include "Kernels/Kernels.h"
 
 
 GPU kl::float2 GetNDC(uint64 ind, const kl::int2& screenSize) {
@@ -41,7 +41,7 @@ GPU kl::color TraceRay(const kl::ray& ray, Raytracer::Entity* entities, uint64 e
 			for (uint64 t = 0; t < entities[e].computed.size; t++) {
 				kl::float3 tempPoint;
 				if (ray.intersect(entities[e].computed.buffer[t], &tempPoint)) {
-					const float tempDepth = (tempPoint - ray.origin).len();
+					const float tempDepth = (tempPoint - ray.origin).length();
 					if (tempDepth < interDepth) {
 						interDepth = tempDepth;
 						entity = entities + e;
@@ -62,11 +62,11 @@ GPU kl::color TraceRay(const kl::ray& ray, Raytracer::Entity* entities, uint64 e
 
 	kl::color rayColor;
 	if (entity) {
-		const kl::vertex intersVert = intersTri->interpolate(intersPoint);
+		const kl::vertex intersVert = intersTri->interpolate(intersTri->weights(intersPoint));
 		const kl::float3 offsetWorld = intersVert.world + (intersVert.normal * 1e-5f);
 
-		const kl::float3 diffuse = kl::float3(sunDiffColor) * max(sunDir.neg().dot(intersVert.normal), 0.0f);
-		const bool inShadow = TraceShadow({ offsetWorld, sunDir.neg() }, entities, entityCount);
+		const kl::float3 diffuse = kl::float3(sunDiffColor) * max(sunDir.negate().dot(intersVert.normal), 0.0f);
+		const bool inShadow = TraceShadow({ offsetWorld, sunDir.negate() }, entities, entityCount);
 
 		const kl::float3 fullLight = ambient + (diffuse * !inShadow);
 		rayColor = GetColor(entity->texture->buffer, entity->texture->size, intersVert.texture);
@@ -83,7 +83,7 @@ GPU kl::color TraceRay(const kl::ray& ray, Raytracer::Entity* entities, uint64 e
 		const float skyMixValue = (-ray.direction.dot({ 0.0f, 1.0f, 0.0f }) + 1.0f) * 0.5f;
 		rayColor = skyTopColor.mix(skyBottomColor, skyMixValue);
 
-		const float sunAngle = ray.direction.angle(sunDir.neg());
+		const float sunAngle = ray.direction.angle(sunDir.negate());
 		const float sunMixValue = (sunAngle - sunRadiuses.x) / (sunRadiuses.y - sunRadiuses.x);
 		rayColor = sunSkyColor.mix(rayColor, sunMixValue);
 	}

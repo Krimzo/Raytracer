@@ -1,4 +1,4 @@
-#include "Kernels/Kernels.cuh"
+#include "Kernels/Kernels.h"
 
 
 RUN void Kernels::Physics(uint64 entityCount, Raytracer::Entity* entities, float deltaT) {

@@ -1,4 +1,4 @@
-#include "Raytracer.cuh"
+#include "Raytracer.h"
 
 
 void Raytracer::User() {

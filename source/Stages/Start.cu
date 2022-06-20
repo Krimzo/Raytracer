@@ -1,5 +1,5 @@
-#include "Raytracer.cuh"
-#include "Kernels/Kernels.cuh"
+#include "Raytracer.h"
+#include "Kernels/Kernels.h"
 
 
 void Raytracer::Start() {

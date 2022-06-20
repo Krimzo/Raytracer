@@ -1,5 +1,5 @@
-#include "Raytracer.cuh"
-#include "Kernels/Kernels.cuh"
+#include "Raytracer.h"
+#include "Kernels/Kernels.h"
 
 
 void ComputePhysics() {
@@ -11,7 +11,7 @@ void PrecomputeTransforms() {
 	uint triangleCount = 0;
 	for (uint e = 0; e < Raytracer::entities.size(); e++) {
 		triangleCount += uint(Raytracer::entities[e].mesh->size);
-		Raytracer::entities[e].computed.far = (Raytracer::entities[e].mesh->far * Raytracer::entities[e].scale).len();
+		Raytracer::entities[e].computed.far = (Raytracer::entities[e].mesh->far * Raytracer::entities[e].scale).length();
 	}
 	Kernels::precompute.runs = triangleCount;
 	Kernels::precompute.run(triangleCount, Raytracer::entities.pointer(), Raytracer::entities.size());
@@ -20,8 +20,8 @@ void PrecomputeTransforms() {
 void Raytrace() {
 	Kernels::raytrace.runs = uint(Raytracer::pixelBuffer.len);
 	Kernels::raytrace.run(Raytracer::pixelBuffer.len, Raytracer::pixelBuffer.buffer, Raytracer::pixelBuffer.size,
-		Raytracer::camera.position, Raytracer::camera.matrix().inv(),
-		Raytracer::entities.pointer(), Raytracer::entities.size(), Raytracer::sunDir.norm());
+		Raytracer::camera.position, Raytracer::camera.matrix().inverse(),
+		Raytracer::entities.pointer(), Raytracer::entities.size(), Raytracer::sunDir.normalize());
 }
 
 void DrawFrame() {

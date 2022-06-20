@@ -1,9 +1,7 @@
-﻿#include "Raytracer.cuh"
+﻿#include "Raytracer.h"
 
 
 int main() {
-	cudaDeviceSetCacheConfig(cudaFuncCachePreferEqual);
-	cudaSetDeviceFlags(cudaDeviceScheduleSpin | cudaDeviceMapHost | cudaDeviceLmemResizeToMax);
 	Raytracer::SetupInput();
 	Raytracer::win.start = Raytracer::Start;
 	Raytracer::win.resize = Raytracer::Resize;
