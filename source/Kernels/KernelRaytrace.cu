@@ -91,7 +91,7 @@ GPU kl::color TraceRay(const kl::ray& ray, Raytracer::Entity* entities, uint64 e
 }
 
 RUN void Kernels::Raytrace(uint64 pixelCount, kl::color* pixelBuffer, kl::int2 screenSize, kl::float3 camPos, kl::mat4 invCam, Raytracer::Entity* entities, uint64 entityCount, kl::float3 sunDir) {
-	const uint64 i = kl::cuda::getX();
+	const uint64 i = kl::cuda::index();
 	if (i < pixelCount) {
 		const kl::float2 ndc = GetNDC(i, screenSize);
 		const kl::ray pixelRay = { camPos, invCam, ndc };
