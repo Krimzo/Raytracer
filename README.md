@@ -1,2 +1,2 @@
 # Cuda Raytracer
-Simple raytracer with nvidia cuda
+Simple raytracer with Nvidia Cuda
