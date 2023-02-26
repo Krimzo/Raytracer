@@ -1,7 +1,7 @@
 import entity.Entity
 import entity.material.Material
 import entity.material.Texture
-import entity.mesh.Mesh
+import entity.mesh.StorageMesh
 import math.vector.Vector3
 import raytracer.Raytracer
 import window.Timer
@@ -29,7 +29,7 @@ class Main : KeyListener {
         monke.position.z = 3.0
         monke.rotation.y = -32.0
         monke.rotation.x = -10.0
-        monke.mesh = Mesh("resource/meshes/monke.obj")
+        monke.storageMesh = StorageMesh("resource/meshes/monke.obj")
         monke.material = Material()
         monke.material?.color = Vector3(Color(220, 150, 105))
         monke.material?.colorMap = Texture("resource/textures/checkers.png")

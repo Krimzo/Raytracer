@@ -1,13 +1,7 @@
 package math.vector
 
-import math.normalize
-import math.toDegrees
-import math.toRadians
 import java.awt.Color
 import java.io.Serializable
-import kotlin.math.acos
-import kotlin.math.cos
-import kotlin.math.sin
 import kotlin.math.sqrt
 
 class Vector3 : Serializable {

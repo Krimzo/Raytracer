@@ -7,17 +7,11 @@ import math.vector.Vector3
 import java.io.BufferedReader
 import java.io.FileReader
 import java.io.Serializable
-import kotlin.math.max
 
-class Mesh : ArrayList<Triangle>, Serializable {
-    val maxRadius: Double
-
-    constructor() {
-        maxRadius = 0.0
-    }
+class StorageMesh : ArrayList<Triangle>, Serializable {
+    constructor()
 
     constructor(filepath: String, flipZ: Boolean = true) {
-        // Parse file
         try {
             val file = FileReader(filepath)
             val reader = BufferedReader(file)
@@ -68,14 +62,5 @@ class Mesh : ArrayList<Triangle>, Serializable {
         catch (ignored: Exception) {
             println("Parse mesh error! [$filepath]")
         }
-
-        // Compute max radius
-        var maxRadius = 0.0
-        for (triangle in this) {
-            maxRadius = max(maxRadius, triangle.a.world.length)
-            maxRadius = max(maxRadius, triangle.b.world.length)
-            maxRadius = max(maxRadius, triangle.c.world.length)
-        }
-        this.maxRadius = maxRadius
     }
 }

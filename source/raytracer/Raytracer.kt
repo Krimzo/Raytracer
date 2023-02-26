@@ -1,6 +1,7 @@
 package raytracer
 
 import math.ray.Ray
+import math.rotate
 import math.vector.Vector2
 import math.vector.Vector3
 import scene.Scene
@@ -9,16 +10,18 @@ import window.Window
 import java.awt.Color
 
 class Raytracer {
-    private val squareSize = 100
+    var squareSize = 75
+
+    var sampleCenter = true
+    var sampleCount = 8
+
     var scene = Scene()
 
     fun render(window: Window) {
         // Setup
         window.target.buffer.clear(Color.BLACK)
         scene.camera.aspect = window.width.toDouble() / window.height
-        for (entity in scene) {
-            entity.value.transformMesh()
-        }
+        scene.values.stream().parallel().forEach { it.transformMesh() }
 
         // Render
         val jobs = JobQueue()
@@ -61,13 +64,36 @@ class Raytracer {
     }
 
     private fun renderPixel(x: Int, y: Int, buffer: FrameBuffer) {
-        val ndc = getNDC(x, y, buffer.width, buffer.height)
-        val ray = Ray(scene.camera, ndc)
-        val pixelColor = traceRay(ray).pixelColor
+        var pixelColor = Vector3()
+
+        // Sample center
+        if (sampleCenter) {
+            val ndc = getNDC(x.toDouble(), y.toDouble(), buffer.width, buffer.height)
+            val ray = Ray(scene.camera, ndc)
+            pixelColor += traceRay(ray).pixelColor
+        }
+
+        // Sample circular
+        for (i in 0 until sampleCount) {
+            var samplePosition = Vector2(0.0, 0.8)
+            samplePosition = rotate(samplePosition, i * (360.0 / sampleCount))
+            samplePosition += Vector2(x.toDouble(), y.toDouble())
+
+            val ndc = getNDC(samplePosition.x, samplePosition.y, buffer.width, buffer.height)
+            val ray = Ray(scene.camera, ndc)
+            pixelColor += traceRay(ray).pixelColor
+        }
+
+        // Average color
+        var sampleCount = sampleCount.toDouble()
+        if (sampleCenter) { sampleCount += 1.0 }
+        pixelColor /= sampleCount
+
+        // Write to buffer
         buffer.setPixel(x, y, pixelColor.color)
     }
 
-    private fun getNDC(x: Int, y: Int, width: Int, height: Int): Vector2 {
+    private fun getNDC(x: Double, y: Double, width: Int, height: Int): Vector2 {
         Vector2(x / (width - 1.0), (height - 1.0 - y) / (height - 1.0)).let {
             return ((it * 2.0) - Vector2(1.0))
         }
@@ -80,7 +106,7 @@ class Raytracer {
         // Entity loop
         for (entity in scene) {
             if (!entity.value.canBeHit(ray)) { continue }
-            for (triangle in entity.value.transformedMesh) {
+            for (triangle in entity.value.renderMesh) {
                 if (!ray.intersect(triangle, tempPosition)) { continue }
                 val intersectionDistance = (tempPosition - ray.origin).length
 

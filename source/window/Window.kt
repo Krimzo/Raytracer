@@ -10,7 +10,7 @@ class Window(width: Int, height: Int, title: String) : JFrame(), ComponentListen
 
     init {
         addComponentListener(this)
-        defaultCloseOperation = DISPOSE_ON_CLOSE
+        defaultCloseOperation = EXIT_ON_CLOSE
         this.size = Dimension(width, height)
         this.title = title
 

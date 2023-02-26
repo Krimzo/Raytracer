@@ -5,7 +5,9 @@ import math.toRadians
 import math.vector.Vector3
 import math.vector.Vector4
 import java.io.Serializable
-import kotlin.math.*
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.tan
 
 class Matrix4x4 : Serializable {
     val data: DoubleArray = DoubleArray(16) {
