@@ -3,39 +3,74 @@ package raytracer
 import math.ray.Ray
 import math.vector.Float2
 import math.vector.Float3
-import math.vector.Int2
 import scene.Scene
 import window.FrameBuffer
-import java.util.stream.IntStream
+import window.Window
+import java.awt.Color
 
 class Raytracer {
+    private val squareSize = 100
     var scene = Scene()
 
-    fun render(buffer: FrameBuffer): Double {
+    fun render(window: Window) {
         // Setup
-        val startTime = System.nanoTime()
-        scene.camera.aspect = buffer.width.toFloat() / buffer.height
-
-        // Transform meshes
+        window.target.buffer.clear(Color.BLACK)
+        scene.camera.aspect = window.width.toFloat() / window.height
         for (entity in scene) {
             entity.value.transformMesh()
         }
 
-        // Trace
-        IntStream.range(0, buffer.height).parallel().forEach { y ->
-            IntStream.range(0, buffer.width).parallel().forEach { x ->
-                val ndc = getNDC(Int2(x, y), buffer.size)
-                val pixelColor = perPixel(ndc)
-                buffer.setPixel(Int2(x, y), pixelColor.color)
+        // Render
+        val jobs = JobQueue()
+        for (square in getRenderSquares(window.width, window.height)) {
+            jobs.addJob {
+                window.target.squares[Thread.currentThread().id] = square
+                renderSquare(square, window)
             }
         }
-        return (System.nanoTime() - startTime) * 1e-6
+
+        // Finalize
+        jobs.finalize()
+        window.target.squares.clear()
+        window.repaint()
     }
 
-    private fun perPixel(ndc: Float2): Float3 {
+    private fun getRenderSquares(width: Int, height: Int): ArrayList<Square> {
+        val squares = ArrayList<Square>()
+        for (y in 0 until (height / squareSize + 1)) {
+            for (x in 0 until (width / squareSize + 1)) {
+                val square = Square()
+                square.x = (x * squareSize)
+                square.y = (y * squareSize)
+                square.size = squareSize
+                squares.add(square)
+            }
+        }
+        return squares
+    }
+
+    private fun renderSquare(square: Square, window: Window) {
+        for (y in square.y until (square.y + square.size)) {
+            for (x in square.x until (square.x + square.size)) {
+                if (window.target.buffer.isValidPosition(x, y)) {
+                    renderPixel(x, y, window.target.buffer)
+                }
+            }
+            window.repaint()
+        }
+    }
+
+    private fun renderPixel(x: Int, y: Int, buffer: FrameBuffer) {
+        val ndc = getNDC(x, y, buffer.width, buffer.height)
         val ray = Ray(scene.camera, ndc)
-        val payload = traceRay(ray)
-        return payload.pixelColor
+        val pixelColor = traceRay(ray).pixelColor
+        buffer.setPixel(x, y, pixelColor.color)
+    }
+
+    private fun getNDC(x: Int, y: Int, width: Int, height: Int): Float2 {
+        Float2(x / (width - 1f), (height - 1f - y) / (height - 1f)).let {
+            return ((it * 2f) - Float2(1f))
+        }
     }
 
     private fun traceRay(ray: Ray): HitPayload {
@@ -92,15 +127,5 @@ class Raytracer {
     private fun onMiss(payload: HitPayload): HitPayload {
         payload.pixelColor = scene.camera.background
         return payload
-    }
-
-    private fun getNDC(position: Int2, frameSize: Int2): Float2 {
-        var ndc = Float2(
-            position.x / (frameSize.x - 1f),
-            (frameSize.y - 1f - position.y) / (frameSize.y - 1f)
-        )
-        ndc *= 2f
-        ndc -= Float2(1f)
-        return ndc
     }
 }

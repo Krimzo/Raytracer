@@ -1,21 +1,33 @@
 package window
 
-import math.vector.Int2
 import java.awt.Color
 import java.awt.image.BufferedImage
 import java.awt.image.DataBufferInt
 import java.io.File
 import javax.imageio.ImageIO
 
-class FrameBuffer(size: Int2) : BufferedImage(size.x, size.y, TYPE_INT_ARGB) {
+class FrameBuffer(width: Int, height: Int) : BufferedImage(width, height, TYPE_INT_ARGB) {
     private val data = (raster.dataBuffer as DataBufferInt).data
 
-    val size: Int2
-        get() = Int2(width, height)
+    init {
+        clear(Color.BLACK)
+    }
 
-    fun setPixel(cords: Int2, color: Color) {
-        if (cords.x >= 0 && cords.y >= 0 && cords.x < width && cords.y < height) {
-            data[cords.y * width + cords.x] = color.rgb
+    fun clear(color: Color) {
+        graphics.let {
+            it.color = color
+            it.fillRect(0, 0, width, height)
+            it.dispose()
+        }
+    }
+
+    fun isValidPosition(x: Int, y: Int): Boolean {
+        return (x >= 0 && y >= 0 && x < width && y < height)
+    }
+
+    fun setPixel(x: Int, y: Int, color: Color) {
+        if (isValidPosition(x, y)) {
+            data[x + y * width] = color.rgb
         }
     }
 

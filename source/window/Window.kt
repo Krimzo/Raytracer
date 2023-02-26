@@ -1,25 +1,30 @@
 package window
 
-import math.vector.Int2
 import java.awt.Dimension
+import java.awt.event.ComponentEvent
+import java.awt.event.ComponentListener
 import javax.swing.JFrame
 
-class Window(size: Int2, title: String) : JFrame() {
+class Window(width: Int, height: Int, title: String) : JFrame(), ComponentListener {
+    val target = DrawTarget()
+
     init {
+        addComponentListener(this)
         defaultCloseOperation = DISPOSE_ON_CLOSE
-        setSize(Dimension(size.x, size.y))
-        setTitle(title)
+        this.size = Dimension(width, height)
+        this.title = title
+
+        add(target)
         isVisible = true
     }
 
-    val frameSize: Int2
-        get() = Int2(width, height)
-
-    fun process(): Boolean {
-        return isDisplayable
+    override fun componentResized(e: ComponentEvent?) {
+        target.buffer = FrameBuffer(width, height)
     }
 
-    fun display(frame: FrameBuffer) {
-        graphics.drawImage(frame, 0, 0, null)
-    }
+    override fun componentMoved(e: ComponentEvent?) {}
+
+    override fun componentShown(e: ComponentEvent?) {}
+
+    override fun componentHidden(e: ComponentEvent?) {}
 }

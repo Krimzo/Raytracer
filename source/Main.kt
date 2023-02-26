@@ -3,9 +3,8 @@ import entity.material.Material
 import entity.material.Texture
 import entity.mesh.Mesh
 import math.vector.Float3
-import math.vector.Int2
 import raytracer.Raytracer
-import window.FrameBuffer
+import window.Timer
 import window.Window
 import java.awt.Color
 import java.awt.event.KeyEvent
@@ -16,17 +15,12 @@ fun main() {
 }
 
 class Main : KeyListener {
-    private val window = Window(Int2(1600, 900), "Raytracer")
-    private var buffer = FrameBuffer(window.frameSize)
+    private val window = Window(1600, 900, "Raytracer")
     private val tracer = Raytracer()
 
     init {
         setupTestScene()
         window.addKeyListener(this)
-        while (window.process()) {
-            window.display(buffer)
-            Thread.sleep(16)
-        }
     }
 
     private fun setupTestScene() {
@@ -46,23 +40,16 @@ class Main : KeyListener {
         tracer.scene.directionalLight.direction = Float3(-1f, -1f, -1f)
     }
 
-    private fun renderScene() {
-        // Check
-        if (!window.isResizable) { return }
+    @Synchronized private fun renderScene() {
+        val timer = Timer()
         window.isResizable = false
-
-        // Render
-        buffer = FrameBuffer(window.frameSize)
-        val msRenderTime = tracer.render(buffer)
-
-        // Finalize
-        if (msRenderTime < 1e3) {
-            window.title = "Raytracer [$msRenderTime ms]"
-        }
-        else {
-            window.title = "Raytracer [${msRenderTime / 1e3} s]"
-        }
+        tracer.render(window)
         window.isResizable = true
+        window.title = "Raytracer [${timer.elapsed()} s]"
+    }
+
+    @Synchronized private fun saveScene() {
+        window.target.buffer.saveToFile("render.png")
     }
 
     override fun keyTyped(e: KeyEvent?) {}
@@ -71,8 +58,8 @@ class Main : KeyListener {
 
     override fun keyReleased(e: KeyEvent?) {
         when (e?.keyChar) {
-            'r' -> { renderScene() }
-            's' -> { buffer.saveToFile("render.png") }
+            'r' -> { Thread { renderScene() }.start() }
+            's' -> { Thread { saveScene() }.start() }
         }
     }
 }
