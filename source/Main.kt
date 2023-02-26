@@ -24,18 +24,50 @@ class Main : KeyListener {
     }
 
     private fun setupTestScene() {
+        // Meshes
+        val cubeMesh = StorageMesh("resource/meshes/cube.obj")
+        val monkeMesh = StorageMesh("resource/meshes/monke.obj")
+        val sphereMesh = StorageMesh("resource/meshes/sphere.obj")
+
+        // Textures
+        val checkersTexture = Texture("resource/textures/checkers.png")
+        //val dogoTexture = Texture("resource/textures/dogo.png")
+
+        // Cube
+        val cube = Entity()
+        cube.position = Vector3(-3.0, 0.0, 3.0)
+        cube.rotation.y = 45.0
+        cube.storageMesh = cubeMesh
+        cube.material = Material()
+        cube.material?.color = Vector3(1.0)
+        cube.material?.colorMap = checkersTexture
+        tracer.scene["Cube"] = cube
+
         // Monke
         val monke = Entity()
         monke.position.z = 3.0
-        monke.rotation.y = -32.0
-        monke.rotation.x = -10.0
-        monke.storageMesh = StorageMesh("resource/meshes/monke.obj")
+        monke.rotation = Vector3(-10.0, -32.0, 0.0)
+        monke.storageMesh = monkeMesh
         monke.material = Material()
         monke.material?.color = Vector3(Color(220, 150, 105))
-        monke.material?.colorMap = Texture("resource/textures/checkers.png")
+        monke.material?.colorMap = checkersTexture
         tracer.scene["Monke"] = monke
 
-        // Light setup
+        // Sphere
+        val sphere = Entity()
+        sphere.position = Vector3(3.0, 0.0, 3.0)
+        sphere.storageMesh = sphereMesh
+        sphere.material = Material()
+        sphere.material?.color = Vector3(Color(80, 200, 130))
+        sphere.material?.colorMap = checkersTexture
+        tracer.scene["Sphere"] = sphere
+
+        // Camera setup
+        val camera = tracer.scene.camera
+        camera.position = Vector3(-1.0, 2.0, -2.0)
+        camera.direction = monke.position - camera.position
+
+        // Light
         tracer.scene.directionalLight.direction = Vector3(-1.0, -1.0, 1.0)
     }
 

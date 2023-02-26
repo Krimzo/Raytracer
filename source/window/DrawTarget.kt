@@ -2,14 +2,20 @@ package window
 
 import raytracer.Square
 import java.awt.Graphics
+import java.awt.event.ComponentEvent
+import java.awt.event.ComponentListener
 import javax.swing.JPanel
 import kotlin.math.min
 
-class DrawTarget : JPanel() {
+class DrawTarget : JPanel(), ComponentListener {
     var buffer = FrameBuffer(1, 1)
     val squares = HashMap<Long, Square>()
 
+    val aspect: Double
+        get() = width.toDouble() / height
+
     init {
+        addComponentListener(this)
         isVisible = true
     }
 
@@ -28,4 +34,12 @@ class DrawTarget : JPanel() {
             drawSquares(it)
         }
     }
+
+    override fun componentResized(e: ComponentEvent?) {
+        buffer = FrameBuffer(width, height)
+    }
+
+    override fun componentMoved(e: ComponentEvent?) {}
+    override fun componentShown(e: ComponentEvent?) {}
+    override fun componentHidden(e: ComponentEvent?) {}
 }

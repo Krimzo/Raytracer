@@ -20,7 +20,7 @@ class Raytracer {
     fun render(window: Window) {
         // Setup
         window.target.buffer.clear(Color.BLACK)
-        scene.camera.aspect = window.width.toDouble() / window.height
+        scene.camera.aspect = window.target.aspect
         scene.values.stream().parallel().forEach { it.transformMesh() }
 
         // Render
@@ -75,7 +75,7 @@ class Raytracer {
 
         // Sample circular
         for (i in 0 until sampleCount) {
-            var samplePosition = Vector2(0.0, 0.8)
+            var samplePosition = Vector2(0.0, 0.75)
             samplePosition = rotate(samplePosition, i * (360.0 / sampleCount))
             samplePosition += Vector2(x.toDouble(), y.toDouble())
 

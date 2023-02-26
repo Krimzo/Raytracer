@@ -21,8 +21,9 @@ class Entity : Serializable {
 
     fun transformMesh() {
         storageMesh?.let {
+            val scaling = Matrix4x4.scaling(scale)
             val rotationTranslation = (Matrix4x4.translation(position) * Matrix4x4.rotation(rotation))
-            renderMesh = RenderMesh(it, Matrix4x4.scaling(scale), rotationTranslation)
+            renderMesh = RenderMesh(it, scaling, rotationTranslation)
         } ?: run {
             renderMesh = RenderMesh()
         }
