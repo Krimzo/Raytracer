@@ -2,7 +2,7 @@ import entity.Entity
 import entity.material.Material
 import entity.material.Texture
 import entity.mesh.Mesh
-import math.vector.Float3
+import math.vector.Vector3
 import raytracer.Raytracer
 import window.Timer
 import window.Window
@@ -26,18 +26,17 @@ class Main : KeyListener {
     private fun setupTestScene() {
         // Monke
         val monke = Entity()
-        monke.position.z = -5f
-        monke.rotation.y = 32f
-        monke.rotation.x = 10f
+        monke.position.z = 3.0
+        monke.rotation.y = -32.0
+        monke.rotation.x = -10.0
         monke.mesh = Mesh("resource/meshes/monke.obj")
         monke.material = Material()
-        monke.material?.color = Float3(Color(220, 150, 105))
+        monke.material?.color = Vector3(Color(220, 150, 105))
         monke.material?.colorMap = Texture("resource/textures/checkers.png")
         tracer.scene["Monke"] = monke
 
         // Light setup
-        tracer.scene.ambientLight.color = Float3(1f)
-        tracer.scene.directionalLight.direction = Float3(-1f, -1f, -1f)
+        tracer.scene.directionalLight.direction = Vector3(-1.0, -1.0, 1.0)
     }
 
     @Synchronized private fun renderScene() {

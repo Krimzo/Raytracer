@@ -1,44 +1,44 @@
 package math.triangle
 
 import math.normalize
-import math.vector.Float2
-import math.vector.Float3
+import math.vector.Vector2
+import math.vector.Vector3
 import java.io.Serializable
 
 class Vertex : Serializable {
-    var world: Float3 = Float3()
-    var texture: Float2 = Float2()
-    var normal: Float3 = Float3()
+    var world = Vector3()
+    var texture = Vector2()
+    var normal = Vector3()
         set(normal) { field = normalize(normal) }
 
     constructor() {
-        world = Float3()
-        texture = Float2()
-        normal = Float3()
+        world = Vector3()
+        texture = Vector2()
+        normal = Vector3()
     }
 
-    constructor(world: Float3) {
+    constructor(world: Vector3) {
         this.world = world
-        texture = Float2()
-        normal = Float3()
+        texture = Vector2()
+        normal = Vector3()
     }
 
-    constructor(world: Float3, texture: Float2) {
+    constructor(world: Vector3, texture: Vector2) {
         this.world = world
         this.texture = texture
-        normal = Float3()
+        normal = Vector3()
     }
 
-    constructor(world: Float3, texture: Float2, normal: Float3) {
+    constructor(world: Vector3, texture: Vector2, normal: Vector3) {
         this.world = world
         this.texture = texture
         this.normal = normal
     }
 
     constructor(vertex: Vertex) {
-        world = Float3(vertex.world)
-        texture = Float2(vertex.texture)
-        normal = Float3(vertex.normal)
+        world = Vector3(vertex.world)
+        texture = Vector2(vertex.texture)
+        normal = Vector3(vertex.normal)
     }
 
     override fun toString(): String {

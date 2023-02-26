@@ -1,7 +1,7 @@
 package entity.material
 
-import math.vector.Float2
-import math.vector.Float3
+import math.vector.Vector2
+import math.vector.Vector3
 import java.awt.Color
 import java.io.File
 import java.io.Serializable
@@ -38,11 +38,11 @@ class Texture : Serializable {
         return Color.BLACK
     }
 
-    fun sample(uv: Float2): Float3 {
+    fun sample(uv: Vector2): Vector3 {
         val u = (uv.x - uv.x.toInt())
         val v = (uv.y - uv.y.toInt())
-        val x = (u * (width - 1f)).toInt().coerceAtLeast(0).coerceAtMost(width - 1)
-        val y = (v * (height - 1f)).toInt().coerceAtLeast(0).coerceAtMost(height - 1)
-        return Float3(sample(x, height - 1 - y))
+        val x = (u * (width - 1)).toInt().coerceAtLeast(0).coerceAtMost(width - 1)
+        val y = (v * (height - 1)).toInt().coerceAtLeast(0).coerceAtMost(height - 1)
+        return Vector3(sample(x, height - 1 - y))
     }
 }

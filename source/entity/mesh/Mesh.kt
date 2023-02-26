@@ -2,43 +2,45 @@ package entity.mesh
 
 import math.triangle.Triangle
 import math.triangle.Vertex
-import math.vector.Float2
-import math.vector.Float3
+import math.vector.Vector2
+import math.vector.Vector3
 import java.io.BufferedReader
 import java.io.FileReader
 import java.io.Serializable
-import java.lang.Float.max
+import kotlin.math.max
 
 class Mesh : ArrayList<Triangle>, Serializable {
-    val maxRadius: Float
+    val maxRadius: Double
 
     constructor() {
-        maxRadius = 0f
+        maxRadius = 0.0
     }
 
-    constructor(filepath: String) {
+    constructor(filepath: String, flipZ: Boolean = true) {
         // Parse file
         try {
             val file = FileReader(filepath)
             val reader = BufferedReader(file)
 
             val vertices = ArrayList<Vertex>()
-            val xyzBuffer = ArrayList<Float3>()
-            val uvBuffer = ArrayList<Float2>()
-            val normBuffer = ArrayList<Float3>()
+            val xyzBuffer = ArrayList<Vector3>()
+            val uvBuffer = ArrayList<Vector2>()
+            val normBuffer = ArrayList<Vector3>()
+
+            val zFlip = if (flipZ) -1.0 else 1.0
 
             var fileLine = ""
             while (reader.readLine()?.let { fileLine = it } != null) {
                 val lineParts = fileLine.split(" ")
                 when (lineParts[0]) {
                     "v" -> {
-                        xyzBuffer.add(Float3(lineParts[1].toFloat(), lineParts[2].toFloat(), lineParts[3].toFloat()))
+                        xyzBuffer.add(Vector3(lineParts[1].toDouble(), lineParts[2].toDouble(), lineParts[3].toDouble() * zFlip))
                     }
                     "vt" -> {
-                        uvBuffer.add(Float2(lineParts[1].toFloat(), lineParts[2].toFloat()))
+                        uvBuffer.add(Vector2(lineParts[1].toDouble(), lineParts[2].toDouble()))
                     }
                     "vn" -> {
-                        normBuffer.add(Float3(lineParts[1].toFloat(), lineParts[2].toFloat(), lineParts[3].toFloat()))
+                        normBuffer.add(Vector3(lineParts[1].toDouble(), lineParts[2].toDouble(), lineParts[3].toDouble() * zFlip))
                     }
                     "f" -> {
                         for (i in 1..3) {
@@ -68,7 +70,7 @@ class Mesh : ArrayList<Triangle>, Serializable {
         }
 
         // Compute max radius
-        var maxRadius = 0f
+        var maxRadius = 0.0
         for (triangle in this) {
             maxRadius = max(maxRadius, triangle.a.world.length)
             maxRadius = max(maxRadius, triangle.b.world.length)

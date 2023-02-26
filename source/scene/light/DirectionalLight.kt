@@ -1,16 +1,16 @@
 package scene.light
 
 import math.normalize
-import math.vector.Float3
+import math.vector.Vector3
 import java.io.Serializable
 
 class DirectionalLight : Serializable {
-    var color = Float3(1f)
-    var direction = Float3(0f, -1f, 0f)
-        set(dir) { field = normalize(dir) }
+    var color = Vector3(1.0)
+    var direction = Vector3.DOWN
+        set(direction) { field = normalize(direction) }
 
-    fun getFull(normal: Float3): Float3 {
-        val factor = (-direction * normal).coerceAtLeast(0f)
-        return color * factor
+    fun getFull(normal: Vector3): Vector3 {
+        val factor = (-direction * normal).coerceAtLeast(0.0)
+        return (color * factor)
     }
 }

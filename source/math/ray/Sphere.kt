@@ -1,21 +1,21 @@
 package math.ray
 
-import math.vector.Float3
+import math.vector.Vector3
 import java.io.Serializable
 
 class Sphere : Serializable {
-    var origin: Float3 = Float3()
-    var radius: Float = 0f
+    var origin: Vector3 = Vector3()
+    var radius: Double = 0.0
 
     constructor()
 
-    constructor(center: Float3, radius: Float) {
+    constructor(center: Vector3, radius: Double) {
         this.origin = center
         this.radius = radius
     }
 
     constructor(sphere: Sphere) {
-        origin = Float3(sphere.origin)
+        origin = Vector3(sphere.origin)
         radius = sphere.radius
     }
 }

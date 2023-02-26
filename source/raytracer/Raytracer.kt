@@ -1,8 +1,8 @@
 package raytracer
 
 import math.ray.Ray
-import math.vector.Float2
-import math.vector.Float3
+import math.vector.Vector2
+import math.vector.Vector3
 import scene.Scene
 import window.FrameBuffer
 import window.Window
@@ -15,7 +15,7 @@ class Raytracer {
     fun render(window: Window) {
         // Setup
         window.target.buffer.clear(Color.BLACK)
-        scene.camera.aspect = window.width.toFloat() / window.height
+        scene.camera.aspect = window.width.toDouble() / window.height
         for (entity in scene) {
             entity.value.transformMesh()
         }
@@ -67,15 +67,15 @@ class Raytracer {
         buffer.setPixel(x, y, pixelColor.color)
     }
 
-    private fun getNDC(x: Int, y: Int, width: Int, height: Int): Float2 {
-        Float2(x / (width - 1f), (height - 1f - y) / (height - 1f)).let {
-            return ((it * 2f) - Float2(1f))
+    private fun getNDC(x: Int, y: Int, width: Int, height: Int): Vector2 {
+        Vector2(x / (width - 1.0), (height - 1.0 - y) / (height - 1.0)).let {
+            return ((it * 2.0) - Vector2(1.0))
         }
     }
 
     private fun traceRay(ray: Ray): HitPayload {
         val payload = HitPayload()
-        val tempPosition = Float3()
+        val tempPosition = Vector3()
 
         // Entity loop
         for (entity in scene) {
@@ -87,7 +87,7 @@ class Raytracer {
                 if (intersectionDistance >= payload.hitDistance) { continue }
                 payload.hitTriangle = triangle
                 payload.hitEntity = entity.value
-                payload.hitPosition = Float3(tempPosition)
+                payload.hitPosition = Vector3(tempPosition)
                 payload.hitDistance = intersectionDistance
             }
         }
@@ -111,12 +111,12 @@ class Raytracer {
         val totalLight = ambientColor + diffuseColor
 
         // Material color
-        var entityColor = Float3()
+        var entityColor = Vector3()
         payload.hitEntity?.material?.let {
             entityColor = it.getColor(payload.interpolatedVertex.texture)
         }
 
-        payload.pixelColor = Float3(
+        payload.pixelColor = Vector3(
             entityColor.x * totalLight.x,
             entityColor.y * totalLight.y,
             entityColor.z * totalLight.z,
