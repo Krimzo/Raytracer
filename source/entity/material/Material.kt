@@ -1,5 +1,6 @@
 package entity.material
 
+import logging.Logger
 import math.vector.Vector2
 import math.vector.Vector3
 import java.io.Serializable
@@ -19,6 +20,10 @@ class Material : Serializable {
     var metallicMap: Texture? = null
 
     var normalMap: Texture? = null
+
+    init {
+        Logger.log("Created material")
+    }
 
     fun getColor(uv: Vector2): Vector3 {
         colorMap?.let {

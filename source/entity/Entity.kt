@@ -3,6 +3,7 @@ package entity
 import entity.material.Material
 import entity.mesh.RenderMesh
 import entity.mesh.StorageMesh
+import logging.Logger
 import math.matrix.Matrix4x4
 import math.ray.Ray
 import math.ray.Sphere
@@ -18,6 +19,10 @@ class Entity : Serializable {
     var renderMesh = RenderMesh()
 
     var material: Material? = null
+
+    init {
+        Logger.log("Created entity")
+    }
 
     fun transformMesh() {
         storageMesh?.let {

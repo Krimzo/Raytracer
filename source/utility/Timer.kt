@@ -1,4 +1,4 @@
-package window
+package utility
 
 class Timer {
     private val startTime = System.nanoTime()

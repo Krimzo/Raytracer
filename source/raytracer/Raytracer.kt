@@ -8,9 +8,9 @@ import math.reflect
 import math.rotate
 import math.vector.Vector2
 import math.vector.Vector3
+import render.FrameBuffer
+import render.RenderWindow
 import scene.Scene
-import window.FrameBuffer
-import window.Window
 import java.awt.Color
 
 class Raytracer {
@@ -22,26 +22,26 @@ class Raytracer {
 
     var scene = Scene()
 
-    fun render(window: Window) {
+    fun render(renderWindow: RenderWindow) {
         // Setup
         scene.values.stream().parallel().forEach { it.transformMesh() }
-        window.target.buffer.clear(Color.BLACK)
-        scene.camera.aspect = window.target.aspect
+        renderWindow.target.buffer.clear(Color.BLACK)
+        scene.camera.aspect = renderWindow.target.aspect
         val inverseCamera = inverse(scene.camera.matrix())
 
         // Render
         val jobs = JobQueue()
-        for (square in getRenderSquares(window.width, window.height)) {
+        for (square in getRenderSquares(renderWindow.width, renderWindow.height)) {
             jobs.addJob {
-                window.target.squares[Thread.currentThread().id] = square
-                renderSquare(square, window, inverseCamera)
+                renderWindow.target.squares[Thread.currentThread().id] = square
+                renderSquare(square, renderWindow, inverseCamera)
             }
         }
 
         // Finalize
         jobs.finalize()
-        window.target.squares.clear()
-        window.repaint()
+        renderWindow.target.squares.clear()
+        renderWindow.repaint()
     }
 
     private fun getRenderSquares(width: Int, height: Int): ArrayList<Square> {
@@ -58,14 +58,14 @@ class Raytracer {
         return squares
     }
 
-    private fun renderSquare(square: Square, window: Window, inverseCamera: Matrix4x4) {
+    private fun renderSquare(square: Square, renderWindow: RenderWindow, inverseCamera: Matrix4x4) {
         for (y in square.y until (square.y + square.size)) {
             for (x in square.x until (square.x + square.size)) {
-                if (window.target.buffer.isValidPosition(x, y)) {
-                    renderPixel(x, y, window.target.buffer, inverseCamera)
+                if (renderWindow.target.buffer.isValidPosition(x, y)) {
+                    renderPixel(x, y, renderWindow.target.buffer, inverseCamera)
                 }
             }
-            window.repaint()
+            renderWindow.repaint()
         }
     }
 
@@ -134,7 +134,7 @@ class Raytracer {
         val roughness = payload.hitEntity?.material?.roughness ?: 1.0
 
         if (bounceIndex < bounceLimit && roughness < 1.0) {
-            val rayOrigin = (payload.hitPosition + payload.interpolatedVertex.normal * 1e-3)
+            val rayOrigin = payload.getOffsetPosition()
             val rayDirection = reflect(ray.direction, payload.interpolatedVertex.normal)
 
             val bouncePayload = traceRay(Ray(rayOrigin, rayDirection), bounceIndex + 1)
@@ -155,7 +155,7 @@ class Raytracer {
         }
 
         // Shadow
-        val shadowRayOrigin = (payload.hitPosition + payload.interpolatedVertex.normal * 1e-3)
+        val shadowRayOrigin = payload.getOffsetPosition()
         val shadowRayDirection = -scene.directionalLight.direction
         val shadowFactor = getShadowFactor(Ray(shadowRayOrigin, shadowRayDirection))
 
@@ -179,11 +179,10 @@ class Raytracer {
     }
 
     private fun getShadowFactor(ray: Ray): Double {
-        val ignored = Vector3()
         for (entity in scene) {
             if (!entity.value.canBeHit(ray)) { continue }
             for (triangle in entity.value.renderMesh) {
-                if (ray.intersect(triangle, ignored)) {
+                if (ray.intersect(triangle)) {
                     return 0.0
                 }
             }

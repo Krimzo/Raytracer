@@ -1,9 +1,9 @@
-package window
+package render
 
 import java.awt.Dimension
 import javax.swing.JFrame
 
-class Window(width: Int, height: Int, title: String) : JFrame() {
+class RenderWindow(width: Int, height: Int, title: String) : JFrame() {
     val target = DrawTarget()
 
     init {
@@ -12,6 +12,7 @@ class Window(width: Int, height: Int, title: String) : JFrame() {
         this.title = title
 
         add(target)
+
         isVisible = true
     }
 }

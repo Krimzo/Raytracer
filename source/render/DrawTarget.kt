@@ -1,4 +1,4 @@
-package window
+package render
 
 import raytracer.Square
 import java.awt.Graphics

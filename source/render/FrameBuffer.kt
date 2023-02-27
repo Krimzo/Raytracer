@@ -1,4 +1,4 @@
-package window
+package render
 
 import java.awt.Color
 import java.awt.image.BufferedImage

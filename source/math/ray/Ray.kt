@@ -12,7 +12,7 @@ import kotlin.math.sqrt
 
 class Ray : Serializable {
     var origin = Vector3()
-    var direction = Vector3()
+    var direction = Vector3.FORWARD
         set(direction) { field = normalize(direction) }
 
     constructor()
@@ -35,22 +35,26 @@ class Ray : Serializable {
         direction = Vector3(ray.direction)
     }
 
-    fun intersect(plane: Plane, outIntersection: Vector3): Boolean {
-        val denom = normalize(plane.normal) * direction
-        if (abs(denom) > 0.0001) {
-            val t = (plane.origin - origin) * plane.normal / denom
-            if (t >= 0) {
-                val res = origin + direction * t
+    fun intersect(plane: Plane, outIntersection: Vector3? = null): Boolean {
+        val denom = (plane.normal * direction)
+        if (abs(denom) < 1e-4) {
+            return false
+        }
+
+        val t = ((plane.origin - origin) * plane.normal) / denom
+        if (t >= 0) {
+            if (outIntersection != null) {
+                val res = (origin + direction * t)
                 outIntersection.x = res.x
                 outIntersection.y = res.y
                 outIntersection.z = res.z
-                return true
             }
+            return true
         }
         return false
     }
 
-    fun intersect(triangle: Triangle, outIntersection: Vector3): Boolean {
+    fun intersect(triangle: Triangle, outIntersection: Vector3? = null): Boolean {
         val edge1 = (triangle.b.world - triangle.a.world)
         val edge2 = (triangle.c.world - triangle.a.world)
 
@@ -70,10 +74,12 @@ class Ray : Serializable {
 
         val t = (edge2 * q * f)
         if (t > 0) {
-            val res = (origin + direction * t)
-            outIntersection.x = res.x
-            outIntersection.y = res.y
-            outIntersection.z = res.z
+            if (outIntersection != null) {
+                val res = (origin + direction * t)
+                outIntersection.x = res.x
+                outIntersection.y = res.y
+                outIntersection.z = res.z
+            }
             return true
         }
         return false
@@ -92,14 +98,15 @@ class Ray : Serializable {
             return false
         }
 
-        val thc = sqrt(rr - ccDot)
-        val dis0 = (cdDot - thc)
-        val dis1 = (cdDot + thc)
-        outData?.let {
-            it.w = if (dis0 < 0) dis1 else dis0
-            it.x = (origin.x + direction.x * it.w)
-            it.y = (origin.y + direction.y * it.w)
-            it.z = (origin.z + direction.z * it.w)
+        if (outData != null) {
+            val thc = sqrt(rr - ccDot)
+            val dis0 = (cdDot - thc)
+            val dis1 = (cdDot + thc)
+
+            outData.w = if (dis0 < 0) dis1 else dis0
+            outData.x = (origin.x + (direction.x * outData.w))
+            outData.y = (origin.y + (direction.y * outData.w))
+            outData.z = (origin.z + (direction.z * outData.w))
         }
         return true
     }
@@ -108,6 +115,6 @@ class Ray : Serializable {
         val rayLength = (sphere.origin - origin) * direction
         val rayPoint = (direction * rayLength + origin)
         val sphereRayDistance = (sphere.origin - rayPoint).length
-        return sphereRayDistance <= sphere.radius
+        return (sphereRayDistance <= sphere.radius)
     }
 }

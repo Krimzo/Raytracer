@@ -1,5 +1,6 @@
 package entity.mesh
 
+import logging.Logger
 import math.triangle.Triangle
 import math.triangle.Vertex
 import math.vector.Vector2
@@ -9,10 +10,13 @@ import java.io.FileReader
 import java.io.Serializable
 
 class StorageMesh : ArrayList<Triangle>, Serializable {
-    constructor()
+    constructor() {
+        Logger.log("Created empty mesh")
+    }
 
     constructor(filepath: String, flipZ: Boolean = true) {
         try {
+            Logger.log("Loading mesh ($filepath)")
             val file = FileReader(filepath)
             val reader = BufferedReader(file)
 
@@ -60,7 +64,10 @@ class StorageMesh : ArrayList<Triangle>, Serializable {
             }
         }
         catch (ignored: Exception) {
-            println("Parse mesh error! [$filepath]")
+            Logger.log("Failed to load mesh ($filepath)")
+        }
+        finally {
+            Logger.log("Loaded mesh ($filepath)")
         }
     }
 }
