@@ -31,11 +31,11 @@ class Main : KeyListener {
 
         // Textures
         val checkersTexture = Texture("resource/textures/checkers.png")
-        //val dogoTexture = Texture("resource/textures/dogo.png")
+        val dogoTexture = Texture("resource/textures/dogo.png")
 
         // Cube
         val cube = Entity()
-        cube.position = Vector3(-3.0, 0.0, 3.0)
+        cube.position = Vector3(-3.0, 0.0, 3.5)
         cube.rotation.y = 45.0
         cube.storageMesh = cubeMesh
         cube.material = Material()
@@ -45,7 +45,7 @@ class Main : KeyListener {
 
         // Monke
         val monke = Entity()
-        monke.position.z = 3.0
+        monke.position = Vector3(0.0, 0.1, 2.75)
         monke.rotation = Vector3(-10.0, -32.0, 0.0)
         monke.storageMesh = monkeMesh
         monke.material = Material()
@@ -60,6 +60,7 @@ class Main : KeyListener {
         sphere.material = Material()
         sphere.material?.color = Vector3(Color(80, 200, 130))
         sphere.material?.colorMap = checkersTexture
+        sphere.material?.roughness = 0.1
         tracer.scene["Sphere"] = sphere
 
         // Camera setup

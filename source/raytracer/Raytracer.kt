@@ -1,6 +1,10 @@
 package raytracer
 
+import math.inverse
+import math.lerp
+import math.matrix.Matrix4x4
 import math.ray.Ray
+import math.reflect
 import math.rotate
 import math.vector.Vector2
 import math.vector.Vector3
@@ -11,6 +15,7 @@ import java.awt.Color
 
 class Raytracer {
     var squareSize = 75
+    var bounceLimit = 6
 
     var sampleCenter = true
     var sampleCount = 8
@@ -19,16 +24,17 @@ class Raytracer {
 
     fun render(window: Window) {
         // Setup
+        scene.values.stream().parallel().forEach { it.transformMesh() }
         window.target.buffer.clear(Color.BLACK)
         scene.camera.aspect = window.target.aspect
-        scene.values.stream().parallel().forEach { it.transformMesh() }
+        val inverseCamera = inverse(scene.camera.matrix())
 
         // Render
         val jobs = JobQueue()
         for (square in getRenderSquares(window.width, window.height)) {
             jobs.addJob {
                 window.target.squares[Thread.currentThread().id] = square
-                renderSquare(square, window)
+                renderSquare(square, window, inverseCamera)
             }
         }
 
@@ -52,25 +58,25 @@ class Raytracer {
         return squares
     }
 
-    private fun renderSquare(square: Square, window: Window) {
+    private fun renderSquare(square: Square, window: Window, inverseCamera: Matrix4x4) {
         for (y in square.y until (square.y + square.size)) {
             for (x in square.x until (square.x + square.size)) {
                 if (window.target.buffer.isValidPosition(x, y)) {
-                    renderPixel(x, y, window.target.buffer)
+                    renderPixel(x, y, window.target.buffer, inverseCamera)
                 }
             }
             window.repaint()
         }
     }
 
-    private fun renderPixel(x: Int, y: Int, buffer: FrameBuffer) {
+    private fun renderPixel(x: Int, y: Int, buffer: FrameBuffer, inverseCamera: Matrix4x4) {
         var pixelColor = Vector3()
 
         // Sample center
         if (sampleCenter) {
             val ndc = getNDC(x.toDouble(), y.toDouble(), buffer.width, buffer.height)
-            val ray = Ray(scene.camera, ndc)
-            pixelColor += traceRay(ray).pixelColor
+            val ray = Ray(scene.camera.position, inverseCamera, ndc)
+            pixelColor += traceRay(ray, 0).pixelColor
         }
 
         // Sample circular
@@ -80,8 +86,8 @@ class Raytracer {
             samplePosition += Vector2(x.toDouble(), y.toDouble())
 
             val ndc = getNDC(samplePosition.x, samplePosition.y, buffer.width, buffer.height)
-            val ray = Ray(scene.camera, ndc)
-            pixelColor += traceRay(ray).pixelColor
+            val ray = Ray(scene.camera.position, inverseCamera, ndc)
+            pixelColor += traceRay(ray, 0).pixelColor
         }
 
         // Average color
@@ -99,7 +105,7 @@ class Raytracer {
         }
     }
 
-    private fun traceRay(ray: Ray): HitPayload {
+    private fun traceRay(ray: Ray, bounceIndex: Int): HitPayload {
         val payload = HitPayload()
         val tempPosition = Vector3()
 
@@ -118,11 +124,28 @@ class Raytracer {
             }
         }
 
-        // Hit check
+        // Miss
         if (payload.hitEntity == null) {
             return onMiss(payload)
         }
-        return onHit(payload)
+
+        // Hit
+        val hitPayload = onHit(payload)
+        val roughness = payload.hitEntity?.material?.roughness ?: 1.0
+
+        if (bounceIndex < bounceLimit && roughness < 1.0) {
+            val rayOrigin = (payload.hitPosition + payload.interpolatedVertex.normal * 1e-3)
+            val rayDirection = reflect(ray.direction, payload.interpolatedVertex.normal)
+
+            val bouncePayload = traceRay(Ray(rayOrigin, rayDirection), bounceIndex + 1)
+            hitPayload.pixelColor = lerp(bouncePayload.pixelColor, hitPayload.pixelColor, roughness)
+        }
+        return hitPayload
+    }
+
+    private fun onMiss(payload: HitPayload): HitPayload {
+        payload.pixelColor = scene.camera.background
+        return payload
     }
 
     private fun onHit(payload: HitPayload): HitPayload {
@@ -131,10 +154,15 @@ class Raytracer {
             payload.interpolatedVertex = it.interpolate(payload.hitPosition)
         }
 
+        // Shadow
+        val shadowRayOrigin = (payload.hitPosition + payload.interpolatedVertex.normal * 1e-3)
+        val shadowRayDirection = -scene.directionalLight.direction
+        val shadowFactor = getShadowFactor(Ray(shadowRayOrigin, shadowRayDirection))
+
         // Light color
-        val ambientColor = scene.ambientLight.getFull()
+        val roughness = payload.hitEntity?.material?.roughness ?: 1.0
         val diffuseColor = scene.directionalLight.getFull(payload.interpolatedVertex.normal)
-        val totalLight = ambientColor + diffuseColor
+        val totalLight = diffuseColor * shadowFactor * roughness
 
         // Material color
         var entityColor = Vector3()
@@ -150,8 +178,16 @@ class Raytracer {
         return payload
     }
 
-    private fun onMiss(payload: HitPayload): HitPayload {
-        payload.pixelColor = scene.camera.background
-        return payload
+    private fun getShadowFactor(ray: Ray): Double {
+        val ignored = Vector3()
+        for (entity in scene) {
+            if (!entity.value.canBeHit(ray)) { continue }
+            for (triangle in entity.value.renderMesh) {
+                if (ray.intersect(triangle, ignored)) {
+                    return 0.0
+                }
+            }
+        }
+        return 1.0
     }
 }

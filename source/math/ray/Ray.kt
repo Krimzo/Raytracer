@@ -1,19 +1,18 @@
 package math.ray
 
-import math.inverse
+import math.matrix.Matrix4x4
 import math.normalize
 import math.triangle.Triangle
 import math.vector.Vector2
 import math.vector.Vector3
 import math.vector.Vector4
-import scene.Camera
 import java.io.Serializable
 import kotlin.math.abs
 import kotlin.math.sqrt
 
 class Ray : Serializable {
-    var origin: Vector3 = Vector3()
-    var direction: Vector3 = Vector3()
+    var origin = Vector3()
+    var direction = Vector3()
         set(direction) { field = normalize(direction) }
 
     constructor()
@@ -23,12 +22,12 @@ class Ray : Serializable {
         this.direction = direction
     }
 
-    constructor(camera: Camera, ndc: Vector2) {
-        origin = camera.position
-
-        var pixelDirection = inverse(camera.matrix()) * Vector4(ndc.x, ndc.y, 1.0, 1.0)
+    constructor(origin: Vector3, inverseCamera: Matrix4x4, ndc: Vector2) {
+        var pixelDirection = inverseCamera * Vector4(ndc.x, ndc.y, 1.0, 1.0)
         pixelDirection /= pixelDirection.w
-        direction = pixelDirection.xyz
+
+        this.origin = Vector3(origin)
+        this.direction = pixelDirection.xyz
     }
 
     constructor(ray: Ray) {

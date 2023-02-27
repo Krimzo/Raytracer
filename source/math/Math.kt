@@ -20,6 +20,11 @@ fun toDegrees(value: Double): Double {
     return Math.toDegrees(value)
 }
 
+fun lerp(a: Double, b: Double, ratio: Double): Double {
+    val ratio = ratio.coerceAtLeast(0.0).coerceAtMost(1.0)
+    return (a * (1.0 - ratio) + b * ratio)
+}
+
 // Vector2
 fun abs(vec: Vector2): Vector2 {
     return Vector2(abs(vec.x), abs(vec.y))
@@ -35,6 +40,10 @@ fun toRadians(vec: Vector2): Vector2 {
 
 fun toDegrees(vec: Vector2): Vector2 {
     return Vector2(toDegrees(vec.x), toDegrees(vec.y))
+}
+
+fun lerp(a: Vector2, b: Vector2, ratio: Double): Vector2 {
+    return Vector2(lerp(a.x, b.x, ratio), lerp(a.y, b.y, ratio))
 }
 
 fun angle(first: Vector2, second: Vector2): Double {
@@ -64,6 +73,10 @@ fun toDegrees(vec: Vector3): Vector3 {
     return Vector3(toDegrees(vec.x), toDegrees(vec.y), toDegrees(vec.z))
 }
 
+fun lerp(a: Vector3, b: Vector3, ratio: Double): Vector3 {
+    return Vector3(lerp(a.x, b.x, ratio), lerp(a.y, b.y, ratio), lerp(a.z, b.z, ratio))
+}
+
 fun angle(first: Vector3, second: Vector3): Double {
     return toDegrees(acos(normalize(first) * normalize(second)))
 }
@@ -87,8 +100,8 @@ fun rotate(vec: Vector3, axis: Vector3, angle: Double): Vector3 {
 
     val result = Vector3()
     result.x = (w2 + x2 - z2 - y2) * vec.x + (-zw + xy - zw + xy) * vec.y + (yw + xz + xz + yw) * vec.z
-    result.y = (xy + zw + zw + xy) * vec.x + (y2 - z2 + w2 - x2) * vec.y + (yz + yz - xw - xw) * vec.z
-    result.z = (xz - yw + xz - yw) * vec.x + (yz + yz + xw + xw) * vec.y + (z2 - y2 - x2 + w2) * vec.z
+    result.y = (xy + zw + zw + xy) * vec.x + (+y2 - z2 + w2 - x2) * vec.y + (yz + yz - xw - xw) * vec.z
+    result.z = (xz - yw + xz - yw) * vec.x + (+yz + yz + xw + xw) * vec.y + (z2 - y2 - x2 + w2) * vec.z
     return result
 }
 
@@ -112,6 +125,10 @@ fun toRadians(vec: Vector4): Vector4 {
 
 fun toDegrees(vec: Vector4): Vector4 {
     return Vector4(toDegrees(vec.x), toDegrees(vec.y), toDegrees(vec.z), toDegrees(vec.w))
+}
+
+fun lerp(a: Vector4, b: Vector4, ratio: Double): Vector4 {
+    return Vector4(lerp(a.x, b.x, ratio), lerp(a.y, b.y, ratio), lerp(a.z, b.z, ratio), lerp(a.w, b.w, ratio))
 }
 
 fun angle(first: Vector4, second: Vector4): Double {

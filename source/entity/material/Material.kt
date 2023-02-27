@@ -10,11 +10,11 @@ class Material : Serializable {
     var colorRatio = 0.5
         set(colorRatio) { field = colorRatio.coerceAtLeast(0.0).coerceAtMost(1.0) }
 
-    var roughness = 0.5
+    var roughness = 1.0
         set(roughness) { field = roughness.coerceAtLeast(0.0).coerceAtMost(1.0) }
     var roughnessMap: Texture? = null
 
-    var metallic = 0.5
+    var metallic = 0.0
         set(metallic) { field = metallic.coerceAtLeast(0.0).coerceAtMost(1.0) }
     var metallicMap: Texture? = null
 
