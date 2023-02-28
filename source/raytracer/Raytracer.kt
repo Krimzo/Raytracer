@@ -1,5 +1,6 @@
 package raytracer
 
+import editor.EditorWindow
 import math.inverse
 import math.lerp
 import math.matrix.Matrix4x4
@@ -9,11 +10,9 @@ import math.rotate
 import math.vector.Vector2
 import math.vector.Vector3
 import render.FrameBuffer
-import render.RenderWindow
 import scene.Scene
-import java.awt.Color
 
-class Raytracer {
+class Raytracer(private val editor: EditorWindow) {
     var squareSize = 75
     var bounceLimit = 6
 
@@ -22,26 +21,28 @@ class Raytracer {
 
     var scene = Scene()
 
-    fun render(renderWindow: RenderWindow) {
+    fun render() {
         // Setup
-        scene.values.stream().parallel().forEach { it.transformMesh() }
-        renderWindow.target.buffer.clear(Color.BLACK)
-        scene.camera.aspect = renderWindow.target.aspect
+        editor.renderPanel.reallocateBuffer()
+        scene.camera.aspect = editor.renderPanel.aspect
         val inverseCamera = inverse(scene.camera.matrix())
+        scene.values.stream().parallel().forEach {
+            it.transformMesh()
+        }
 
         // Render
         val jobs = JobQueue()
-        for (square in getRenderSquares(renderWindow.width, renderWindow.height)) {
+        for (square in getRenderSquares(editor.renderPanel.width, editor.renderPanel.height)) {
             jobs.addJob {
-                renderWindow.target.squares[Thread.currentThread().id] = square
-                renderSquare(square, renderWindow, inverseCamera)
+                editor.renderPanel.squares[Thread.currentThread().id] = square
+                renderSquare(square, inverseCamera)
             }
         }
 
         // Finalize
         jobs.finalize()
-        renderWindow.target.squares.clear()
-        renderWindow.repaint()
+        editor.renderPanel.squares.clear()
+        editor.renderPanel.repaint()
     }
 
     private fun getRenderSquares(width: Int, height: Int): ArrayList<Square> {
@@ -58,14 +59,14 @@ class Raytracer {
         return squares
     }
 
-    private fun renderSquare(square: Square, renderWindow: RenderWindow, inverseCamera: Matrix4x4) {
+    private fun renderSquare(square: Square, inverseCamera: Matrix4x4) {
         for (y in square.y until (square.y + square.size)) {
             for (x in square.x until (square.x + square.size)) {
-                if (renderWindow.target.buffer.isValidPosition(x, y)) {
-                    renderPixel(x, y, renderWindow.target.buffer, inverseCamera)
+                if (editor.renderPanel.buffer.isValidPosition(x, y)) {
+                    renderPixel(x, y, editor.renderPanel.buffer, inverseCamera)
                 }
             }
-            renderWindow.repaint()
+            editor.repaint()
         }
     }
 

@@ -1,25 +1,19 @@
-import com.formdev.flatlaf.FlatLightLaf
+import com.formdev.flatlaf.FlatDarculaLaf
 import editor.EditorWindow
 import entity.Entity
 import entity.material.Material
 import entity.material.Texture
 import entity.mesh.StorageMesh
-import logging.LogWindow
 import math.vector.Vector3
-import raytracer.Raytracer
-import render.RenderWindow
 import scene.Scene
 import java.awt.Color
 
 fun main() {
-    FlatLightLaf.setup()
+    FlatDarculaLaf.setup()
+    val editorWindow = EditorWindow()
 
-    val raytracer = Raytracer()
-    val renderWindow = RenderWindow(1600, 900, "Raytracer")
-    val editorWindow = EditorWindow(renderWindow, raytracer)
-    val logWindow = LogWindow()
-
-    setupTestScene(raytracer.scene)
+    setupTestScene(editorWindow.raytracer.scene)
+    editorWindow.scenePanel.upateSceneView()
 }
 
 fun setupTestScene(scene: Scene) {

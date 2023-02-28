@@ -7,7 +7,6 @@ import entity.mesh.StorageMesh
 import logging.Logger
 import scene.light.DirectionalLight
 import java.io.*
-import java.lang.Exception
 
 class Scene : LinkedHashMap<String, Entity>(), Serializable {
     val meshes = LinkedHashMap<String, StorageMesh>()
