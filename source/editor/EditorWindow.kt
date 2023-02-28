@@ -5,12 +5,15 @@ import raytracer.Raytracer
 import render.RenderWindow
 import scene.Scene
 import utility.Timer
+import utility.pathWithChangedExtension
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.util.*
 import javax.swing.JButton
+import javax.swing.JFileChooser
 import javax.swing.JFrame
 import javax.swing.JPanel
+import javax.swing.filechooser.FileNameExtensionFilter
 
 class EditorWindow(private val renderWindow: RenderWindow, private val raytracer: Raytracer) : JFrame() {
     private val newSceneButton = JButton("New Scene").let {
@@ -31,7 +34,11 @@ class EditorWindow(private val renderWindow: RenderWindow, private val raytracer
 
     private val saveSceneButton = JButton("Save Scene").let {
         it.addActionListener {
-
+            val chooser = JFileChooser(".")
+            if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                val filepath = chooser.selectedFile.pathWithChangedExtension("scene")
+                raytracer.scene.saveToFile(filepath)
+            }
         }
         it.isVisible = true
         it
@@ -39,7 +46,12 @@ class EditorWindow(private val renderWindow: RenderWindow, private val raytracer
 
     private val loadSceneButton = JButton("Load Scene").let {
         it.addActionListener {
-
+            val chooser = JFileChooser(".")
+            chooser.fileFilter = FileNameExtensionFilter(null, "scene")
+            if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                val filepath = chooser.selectedFile.absolutePath
+                raytracer.scene = Scene.loadFromFile(filepath)
+            }
         }
         it.isVisible = true
         it
