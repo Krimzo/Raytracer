@@ -1,16 +1,20 @@
 package raytracer
 
 import editor.EditorWindow
+import entity.Entity
 import math.inverse
 import math.lerp
 import math.matrix.Matrix4x4
 import math.ray.Ray
 import math.reflect
 import math.rotate
+import math.triangle.Triangle
 import math.vector.Vector2
 import math.vector.Vector3
-import render.FrameBuffer
+import math.vector.Vector4
 import scene.Scene
+import java.awt.Color
+import java.awt.Graphics
 
 class Raytracer(private val editor: EditorWindow) {
     var squareSize = 75
@@ -22,20 +26,86 @@ class Raytracer(private val editor: EditorWindow) {
     var scene = Scene()
 
     fun render() {
-        // Setup
+        val cameraMatrix = renderSetup()
+        renderWireframe(cameraMatrix)
+        renderTraced(cameraMatrix)
+    }
+
+    // Utility
+    private fun renderSetup(): Matrix4x4 {
         editor.renderPanel.reallocateBuffer()
         scene.camera.aspect = editor.renderPanel.aspect
-        val inverseCamera = inverse(scene.camera.matrix())
-        scene.values.stream().parallel().forEach {
-            it.transformMesh()
-        }
+        scene.values.parallelStream().forEach(Entity::transformMesh)
+        return scene.camera.matrix()
+    }
+
+    private fun getNDC(x: Double, y: Double): Vector2 {
+        val width = editor.renderPanel.buffer.width
+        val height = editor.renderPanel.buffer.height
+        val y = (height - 1.0 - y)
+
+        val result = Vector2()
+        result.x = (x / (width - 1)) * 2 - 1
+        result.y = (y / (height - 1)) * 2 - 1
+        return result
+    }
+
+    private fun fromNDC(x: Double, y: Double): Vector2 {
+        val width = editor.renderPanel.buffer.width
+        val height = editor.renderPanel.buffer.height
+        val y = -y
+
+        val result = Vector2()
+        result.x = (x + 1) * 0.5 * (width - 1)
+        result.y = (y + 1) * 0.5 * (height - 1)
+        return result
+    }
+
+    // Wireframe
+    private fun renderWireframe(cameraMatrix: Matrix4x4) {
+        // Setup
+        editor.renderPanel.clear(scene.camera.background.color)
 
         // Render
+        scene.values.parallelStream().forEach { entity ->
+            editor.renderPanel.buffer.graphics.let {
+                it.color = entity.material?.color?.color ?: Color.WHITE
+                entity.renderMesh.parallelStream().forEach { triangle ->
+                    renderWireframeTriangle(it, cameraMatrix, triangle)
+                }
+                it.dispose()
+            }
+        }
+
+        // Finalize
+        editor.renderPanel.repaint()
+    }
+
+    private fun renderWireframeTriangle(graphics: Graphics, cameraMatrix: Matrix4x4, triangle: Triangle) {
+        var a = (cameraMatrix * Vector4(triangle.a.world, 1.0)); a /= a.w
+        var b = (cameraMatrix * Vector4(triangle.b.world, 1.0)); b /= b.w
+        var c = (cameraMatrix * Vector4(triangle.c.world, 1.0)); c /= c.w
+
+        val aCoords = fromNDC(a.x, a.y)
+        val bCoords = fromNDC(b.x, b.y)
+        val cCoords = fromNDC(c.x, c.y)
+
+        graphics.drawLine(aCoords.x.toInt(), aCoords.y.toInt(), bCoords.x.toInt(), bCoords.y.toInt())
+        graphics.drawLine(bCoords.x.toInt(), bCoords.y.toInt(), cCoords.x.toInt(), cCoords.y.toInt())
+        graphics.drawLine(cCoords.x.toInt(), cCoords.y.toInt(), aCoords.x.toInt(), aCoords.y.toInt())
+    }
+
+    // Tracing
+    private fun renderTraced(cameraMatrix: Matrix4x4) {
+        // Setup
+        val inverseCameraMatrix = inverse(cameraMatrix)
         val jobs = JobQueue()
+
+        // Render
         for (square in getRenderSquares(editor.renderPanel.width, editor.renderPanel.height)) {
-            jobs.addJob {
-                editor.renderPanel.squares[Thread.currentThread().id] = square
-                renderSquare(square, inverseCamera)
+            jobs.addJob { id ->
+                editor.renderPanel.squares[id] = square
+                renderSquare(square, inverseCameraMatrix)
             }
         }
 
@@ -63,19 +133,19 @@ class Raytracer(private val editor: EditorWindow) {
         for (y in square.y until (square.y + square.size)) {
             for (x in square.x until (square.x + square.size)) {
                 if (editor.renderPanel.buffer.isValidPosition(x, y)) {
-                    renderPixel(x, y, editor.renderPanel.buffer, inverseCamera)
+                    renderPixel(x, y, inverseCamera)
                 }
             }
             editor.repaint()
         }
     }
 
-    private fun renderPixel(x: Int, y: Int, buffer: FrameBuffer, inverseCamera: Matrix4x4) {
+    private fun renderPixel(x: Int, y: Int, inverseCamera: Matrix4x4) {
         var pixelColor = Vector3()
 
         // Sample center
         if (sampleCenter) {
-            val ndc = getNDC(x.toDouble(), y.toDouble(), buffer.width, buffer.height)
+            val ndc = getNDC(x.toDouble(), y.toDouble())
             val ray = Ray(scene.camera.position, inverseCamera, ndc)
             pixelColor += traceRay(ray, 0).pixelColor
         }
@@ -86,7 +156,7 @@ class Raytracer(private val editor: EditorWindow) {
             samplePosition = rotate(samplePosition, i * (360.0 / sampleCount))
             samplePosition += Vector2(x.toDouble(), y.toDouble())
 
-            val ndc = getNDC(samplePosition.x, samplePosition.y, buffer.width, buffer.height)
+            val ndc = getNDC(samplePosition.x, samplePosition.y)
             val ray = Ray(scene.camera.position, inverseCamera, ndc)
             pixelColor += traceRay(ray, 0).pixelColor
         }
@@ -97,13 +167,7 @@ class Raytracer(private val editor: EditorWindow) {
         pixelColor /= sampleCount
 
         // Write to buffer
-        buffer.setPixel(x, y, pixelColor.color)
-    }
-
-    private fun getNDC(x: Double, y: Double, width: Int, height: Int): Vector2 {
-        Vector2(x / (width - 1.0), (height - 1.0 - y) / (height - 1.0)).let {
-            return ((it * 2.0) - Vector2(1.0))
-        }
+        editor.renderPanel.buffer.setPixel(x, y, pixelColor.color)
     }
 
     private fun traceRay(ray: Ray, bounceIndex: Int): HitPayload {

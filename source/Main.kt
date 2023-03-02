@@ -69,7 +69,7 @@ fun setupTestScene(scene: Scene) {
     // Camera setup
     val camera = scene.camera
     camera.position = Vector3(-1.0, 2.0, -2.0)
-    camera.direction = monke.position - camera.position
+    camera.direction = (monke.position - camera.position)
 
     // Light
     scene.directionalLight.direction = Vector3(-1.0, -1.0, 1.0)

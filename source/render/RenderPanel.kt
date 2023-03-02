@@ -2,6 +2,7 @@ package render
 
 import editor.EditorWindow
 import raytracer.Square
+import java.awt.Color
 import java.awt.Graphics
 import javax.swing.JPanel
 import kotlin.math.min
@@ -18,7 +19,17 @@ class RenderPanel(private val editor: EditorWindow) : JPanel() {
     }
 
     fun reallocateBuffer() {
-        buffer = FrameBuffer(width, height)
+        if (width != buffer.width || height != buffer.height) {
+            buffer = FrameBuffer(width, height)
+        }
+    }
+
+    fun clear(color: Color) {
+        buffer.graphics.let {
+            it.color = color
+            it.fillRect(0, 0, width, height)
+            it.dispose()
+        }
     }
 
     private fun drawSquares(graphics: Graphics) {
