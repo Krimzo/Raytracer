@@ -13,7 +13,6 @@ import math.vector.Vector2
 import math.vector.Vector3
 import math.vector.Vector4
 import scene.Scene
-import java.awt.Color
 import java.awt.Graphics
 
 class Raytracer(private val editor: EditorWindow) {
@@ -56,8 +55,8 @@ class Raytracer(private val editor: EditorWindow) {
         val y = -y
 
         val result = Vector2()
-        result.x = (x + 1) * 0.5 * (width - 1)
-        result.y = (y + 1) * 0.5 * (height - 1)
+        result.x = ((x + 1) * 0.5) * (width - 1)
+        result.y = ((y + 1) * 0.5) * (height - 1)
         return result
     }
 
@@ -69,7 +68,7 @@ class Raytracer(private val editor: EditorWindow) {
         // Render
         scene.values.parallelStream().forEach { entity ->
             editor.renderPanel.buffer.graphics.let {
-                it.color = entity.material?.color?.color ?: Color.WHITE
+                it.color = entity.material?.color?.color
                 entity.renderMesh.parallelStream().forEach { triangle ->
                     renderWireframeTriangle(it, cameraMatrix, triangle)
                 }
@@ -221,13 +220,13 @@ class Raytracer(private val editor: EditorWindow) {
 
         // Shadow
         val shadowRayOrigin = payload.getOffsetPosition()
-        val shadowRayDirection = -scene.directionalLight.direction
+        val shadowRayDirection = -scene.selectedDirectionalLight.direction
         val shadowFactor = getShadowFactor(Ray(shadowRayOrigin, shadowRayDirection))
 
         // Light color
         val roughness = payload.hitEntity?.material?.roughness ?: 1.0
-        val diffuseColor = scene.directionalLight.getFull(payload.interpolatedVertex.normal)
-        val totalLight = diffuseColor * shadowFactor * roughness
+        val diffuseColor = scene.selectedDirectionalLight.getFull(payload.interpolatedVertex.normal)
+        val totalLight = (diffuseColor * shadowFactor * roughness)
 
         // Material color
         var entityColor = Vector3()

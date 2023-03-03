@@ -3,6 +3,7 @@ package editor
 import logging.LogPanel
 import raytracer.Raytracer
 import render.RenderPanel
+import scene.ScenePanel
 import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.JFrame

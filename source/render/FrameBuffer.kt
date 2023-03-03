@@ -31,7 +31,7 @@ class FrameBuffer(width: Int, height: Int) : BufferedImage(width, height, TYPE_I
         }
     }
 
-    fun saveToFile(filepath: String) {
+    fun saveAsPNG(filepath: String) {
         ImageIO.write(this, "png", File(filepath))
     }
 }
