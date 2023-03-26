@@ -4,9 +4,13 @@ import logging.LogPanel
 import raytracer.Raytracer
 import render.RenderPanel
 import scene.ScenePanel
+import utility.safe
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.io.File
+import javax.imageio.ImageIO
 import javax.swing.JFrame
+import javax.swing.JSplitPane
 
 class EditorWindow : JFrame() {
     val scenePanel = ScenePanel(this)
@@ -21,9 +25,22 @@ class EditorWindow : JFrame() {
         this.title = "Krimz Raytracer"
 
         layout = BorderLayout()
-        add(scenePanel, BorderLayout.WEST)
-        add(renderPanel, BorderLayout.CENTER)
-        add(logPanel, BorderLayout.EAST)
+        JSplitPane(JSplitPane.HORIZONTAL_SPLIT, scenePanel, renderPanel).let { panel0 ->
+            panel0.isOneTouchExpandable = true
+            panel0.isVisible = true
+
+            JSplitPane(JSplitPane.HORIZONTAL_SPLIT, panel0, logPanel).let { panel1 ->
+                panel1.isOneTouchExpandable = true
+                panel1.resizeWeight = 0.95
+                panel1.isVisible = true
+
+                add(panel1, BorderLayout.CENTER)
+            }
+        }
+
+        safe {
+            iconImage = ImageIO.read(File("resource/icons/application.png"))
+        }
 
         isVisible = true
         extendedState = (extendedState or MAXIMIZED_BOTH)

@@ -73,8 +73,10 @@ class ScenePanel(private val editor: EditorWindow) : JPanel(), MouseListener {
 
         it.addMouseListener(this)
         it.isVisible = true
-        it
+        JScrollPane(it)
     }
+
+    private val entityInfo = EntityInfo(editor)
 
     init {
         layout = BorderLayout()
@@ -96,13 +98,20 @@ class ScenePanel(private val editor: EditorWindow) : JPanel(), MouseListener {
             add(panel0, BorderLayout.NORTH)
         }
 
-        add(sceneView, BorderLayout.CENTER)
+        JSplitPane(JSplitPane.VERTICAL_SPLIT, sceneView, entityInfo).let { panel0 ->
+            panel0.isOneTouchExpandable = true
+            panel0.resizeWeight = 0.5
+            panel0.isVisible = true
+            add(panel0, BorderLayout.CENTER)
+        }
+
         isVisible = true
     }
 
     fun upateSceneView() {
         sceneViewModel.clear()
         sceneViewModel.addAll(editor.raytracer.scene.keys)
+        entityInfo.updateInfo()
     }
 
     private fun saveRenderedImage(): String {
@@ -141,6 +150,17 @@ class ScenePanel(private val editor: EditorWindow) : JPanel(), MouseListener {
 
     override fun mouseClicked(e: MouseEvent?) {
         if (e == null) { return }
+
+        if (SwingUtilities.isLeftMouseButton(e)) {
+            val entityNames = e.source
+            if (entityNames is JList<*> && e.clickCount == 2) {
+                val entityName = sceneViewModel.get(entityNames.selectedIndex)
+                editor.raytracer.scene.let {
+                    it.selectedEntity = it[entityName]
+                    upateSceneView()
+                }
+            }
+        }
 
         if (SwingUtilities.isRightMouseButton(e)) {
             val menu = JPopupMenu()

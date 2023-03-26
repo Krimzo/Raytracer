@@ -22,7 +22,11 @@ fun toDegrees(value: Double): Double {
 
 fun lerp(a: Double, b: Double, ratio: Double): Double {
     val ratio = ratio.coerceAtLeast(0.0).coerceAtMost(1.0)
-    return (a * (1.0 - ratio) + b * ratio)
+    return (a * (1 - ratio) + b * ratio)
+}
+
+fun isUnit(a: Double): Boolean {
+    return (a in 0.0..1.0)
 }
 
 // Vector2
@@ -62,7 +66,7 @@ fun abs(vec: Vector3): Vector3 {
 }
 
 fun normalize(vec: Vector3): Vector3 {
-    return vec / vec.length
+    return (vec / vec.length)
 }
 
 fun toRadians(vec: Vector3): Vector3 {

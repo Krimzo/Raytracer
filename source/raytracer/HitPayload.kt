@@ -14,8 +14,4 @@ class HitPayload {
 
     var interpolatedVertex = Vertex()
     var pixelColor = Vector3()
-
-    fun getOffsetPosition(offset: Double = 1e-3): Vector3 {
-        return (hitPosition + (interpolatedVertex.normal * offset))
-    }
 }

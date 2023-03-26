@@ -2,12 +2,9 @@ package raytracer
 
 import editor.EditorWindow
 import entity.Entity
-import math.inverse
-import math.lerp
+import math.*
 import math.matrix.Matrix4x4
 import math.ray.Ray
-import math.reflect
-import math.rotate
 import math.triangle.Triangle
 import math.vector.Vector2
 import math.vector.Vector3
@@ -85,6 +82,10 @@ class Raytracer(private val editor: EditorWindow) {
         var b = (cameraMatrix * Vector4(triangle.b.world, 1.0)); b /= b.w
         var c = (cameraMatrix * Vector4(triangle.c.world, 1.0)); c /= c.w
 
+        if (!isUnit(a.z) || !isUnit(b.z) || !isUnit(c.z)) {
+            return
+        }
+
         val aCoords = fromNDC(a.x, a.y)
         val bCoords = fromNDC(b.x, b.y)
         val cCoords = fromNDC(c.x, c.y)
@@ -146,7 +147,7 @@ class Raytracer(private val editor: EditorWindow) {
         if (sampleCenter) {
             val ndc = getNDC(x.toDouble(), y.toDouble())
             val ray = Ray(scene.camera.position, inverseCamera, ndc)
-            pixelColor += traceRay(ray, 0).pixelColor
+            pixelColor += traceRay(ray, 0, null).pixelColor
         }
 
         // Sample circular
@@ -157,7 +158,7 @@ class Raytracer(private val editor: EditorWindow) {
 
             val ndc = getNDC(samplePosition.x, samplePosition.y)
             val ray = Ray(scene.camera.position, inverseCamera, ndc)
-            pixelColor += traceRay(ray, 0).pixelColor
+            pixelColor += traceRay(ray, 0, null).pixelColor
         }
 
         // Average color
@@ -169,18 +170,26 @@ class Raytracer(private val editor: EditorWindow) {
         editor.renderPanel.buffer.setPixel(x, y, pixelColor.color)
     }
 
-    private fun traceRay(ray: Ray, bounceIndex: Int): HitPayload {
+    private fun traceRay(ray: Ray, bounceIndex: Int, sourceTriangle: Triangle?): HitPayload {
         val payload = HitPayload()
         val tempPosition = Vector3()
 
         // Entity loop
         for (entity in scene) {
-            if (!entity.value.canBeHit(ray)) { continue }
-            for (triangle in entity.value.renderMesh) {
-                if (!ray.intersect(triangle, tempPosition)) { continue }
-                val intersectionDistance = (tempPosition - ray.origin).length
+            if (!entity.value.canBeHit(ray)) {
+                continue
+            }
 
-                if (intersectionDistance >= payload.hitDistance) { continue }
+            for (triangle in entity.value.renderMesh) {
+                if (triangle === sourceTriangle || !ray.intersect(triangle, tempPosition)) {
+                    continue
+                }
+
+                val intersectionDistance = (tempPosition - ray.origin).length
+                if (intersectionDistance >= payload.hitDistance) {
+                    continue
+                }
+
                 payload.hitTriangle = triangle
                 payload.hitEntity = entity.value
                 payload.hitPosition = Vector3(tempPosition)
@@ -197,11 +206,11 @@ class Raytracer(private val editor: EditorWindow) {
         val hitPayload = onHit(payload)
         val roughness = payload.hitEntity?.material?.roughness ?: 1.0
 
-        if (bounceIndex < bounceLimit && roughness < 1.0) {
-            val rayOrigin = payload.getOffsetPosition()
+        if (bounceIndex < bounceLimit && roughness < 1) {
+            val rayOrigin = payload.hitPosition
             val rayDirection = reflect(ray.direction, payload.interpolatedVertex.normal)
 
-            val bouncePayload = traceRay(Ray(rayOrigin, rayDirection), bounceIndex + 1)
+            val bouncePayload = traceRay(Ray(rayOrigin, rayDirection), bounceIndex + 1, hitPayload.hitTriangle)
             hitPayload.pixelColor = lerp(bouncePayload.pixelColor, hitPayload.pixelColor, roughness)
         }
         return hitPayload
@@ -219,9 +228,9 @@ class Raytracer(private val editor: EditorWindow) {
         }
 
         // Shadow
-        val shadowRayOrigin = payload.getOffsetPosition()
+        val shadowRayOrigin = payload.hitPosition
         val shadowRayDirection = -scene.selectedDirectionalLight.direction
-        val shadowFactor = getShadowFactor(Ray(shadowRayOrigin, shadowRayDirection))
+        val shadowFactor = getShadowFactor(Ray(shadowRayOrigin, shadowRayDirection), payload.hitTriangle)
 
         // Light color
         val roughness = payload.hitEntity?.material?.roughness ?: 1.0
@@ -231,7 +240,7 @@ class Raytracer(private val editor: EditorWindow) {
         // Material color
         var entityColor = Vector3()
         payload.hitEntity?.material?.let {
-            entityColor = it.getColor(payload.interpolatedVertex.texture)
+            entityColor = it.computeColor(payload.interpolatedVertex.texture)
         }
 
         payload.pixelColor = Vector3(
@@ -242,11 +251,14 @@ class Raytracer(private val editor: EditorWindow) {
         return payload
     }
 
-    private fun getShadowFactor(ray: Ray): Double {
+    private fun getShadowFactor(ray: Ray, sourceTriangle: Triangle?): Double {
         for (entity in scene) {
-            if (!entity.value.canBeHit(ray)) { continue }
+            if (!entity.value.canBeHit(ray)) {
+                continue
+            }
+
             for (triangle in entity.value.renderMesh) {
-                if (ray.intersect(triangle)) {
+                if (triangle !== sourceTriangle && ray.intersect(triangle)) {
                     return 0.0
                 }
             }

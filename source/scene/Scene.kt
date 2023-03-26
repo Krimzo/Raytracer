@@ -22,6 +22,15 @@ class Scene : LinkedHashMap<String, Entity>(), Serializable {
         Logger.log("Created empty scene")
     }
 
+    fun getSlectedName(): String? {
+        for (entity in this) {
+            if (entity.value === selectedEntity) {
+                return entity.key
+            }
+        }
+        return null
+    }
+
     fun saveToFile(filepath: String) {
         Logger.log("Scene saving stared ($filepath)")
         return try {
