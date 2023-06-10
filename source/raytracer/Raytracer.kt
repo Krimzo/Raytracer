@@ -36,7 +36,7 @@ class Raytracer {
         IntStream.range(0, frameBuffer.width * frameBuffer.height).parallel().forEach { i ->
             val x = i % frameBuffer.width; val y = i / frameBuffer.width
             val light = perPixel(scene, x, y, inverseCamera)
-            frameBuffer.addLight(x, y, light)
+            frameBuffer.addLight(i, light)
         }
         return frameBuffer
     }
@@ -56,7 +56,8 @@ class Raytracer {
 
             val material = payload.sphere?.material ?: continue
             contribution = contribution multiply material.albedo
-            light += material.totalEmission() multiply contribution
+            light += material.totalEmission()
+            light = light multiply contribution
 
             ray.origin = payload.position + payload.normal * 0.0001
             ray.direction = normalize(payload.normal + Random.unitSphere())

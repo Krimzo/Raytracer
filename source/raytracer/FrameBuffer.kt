@@ -18,8 +18,7 @@ class FrameBuffer(dimension: Dimension) : BufferedImage(dimension.width, dimensi
     val size: Dimension
         get() = Dimension(width, height)
 
-    fun addLight(x: Int, y: Int, light: Vector3) {
-        val index = x + y * width
+    fun addLight(index: Int, light: Vector3) {
         lightData[index] += light
         pixelData[index] = (lightData[index] * invCounter).color.rgb
     }

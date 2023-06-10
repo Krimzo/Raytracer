@@ -67,12 +67,15 @@ fun setupTestScene(): Scene {
 
     // Materials
     val material0 = Material()
-    material0.albedo = Vector3(Color(220, 150, 100))
+    material0.albedo = Vector3(Color(225, 155, 15))
 
     val material1 = Material()
-    material1.albedo = material0.albedo
+    material1.albedo = Vector3(1.0)
     material1.emissionColor = material1.albedo
-    material1.emissionPower = 20.0
+    material1.emissionPower = 10.0
+
+    val material2 = Material()
+    material2.albedo = Vector3(Color(235, 15, 115))
 
     // Spheres
     val sphere0 = Sphere()
@@ -82,15 +85,15 @@ fun setupTestScene(): Scene {
     scene.add(sphere0)
 
     val sphere1 = Sphere()
-    sphere1.origin = Vector3(0.0, 1.0, 0.0)
-    sphere1.radius = 1.0
-    sphere1.material = material0
+    sphere1.origin = Vector3(25.0, 10.0, 0.0)
+    sphere1.radius = 10.0
+    sphere1.material = material1
     scene.add(sphere1)
 
     val sphere2 = Sphere()
-    sphere2.origin = Vector3(25.0, 10.0, 0.0)
-    sphere2.radius = 10.0
-    sphere2.material = material1
+    sphere2.origin = Vector3(0.0, 1.0, 0.0)
+    sphere2.radius = 1.0
+    sphere2.material = material2
     scene.add(sphere2)
 
     // Camera setup
