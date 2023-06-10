@@ -80,11 +80,16 @@ class Vector3 : Serializable {
         return this * -1.0
     }
 
+    infix fun multiply(other: Vector3): Vector3 {
+        return Vector3(
+            x * other.x,
+            y * other.y,
+            z * other.z,
+        )
+    }
+
     override fun equals(other: Any?): Boolean {
-        if (other is Vector3) {
-            return (x == other.x && y == other.y && z == other.z)
-        }
-        return false
+        return if (other is Vector3) (x == other.x && y == other.y && z == other.z) else false
     }
 
     override fun toString(): String {

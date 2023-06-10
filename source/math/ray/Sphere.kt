@@ -1,11 +1,13 @@
 package math.ray
 
 import math.vector.Vector3
+import scene.Material
 import java.io.Serializable
 
 class Sphere : Serializable {
-    var origin: Vector3 = Vector3()
-    var radius: Double = 0.0
+    var origin = Vector3()
+    var radius = 0.0
+    var material = Material()
 
     constructor()
 

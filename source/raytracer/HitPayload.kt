@@ -1,17 +1,15 @@
 package raytracer
 
-import entity.Entity
-import math.triangle.Triangle
-import math.triangle.Vertex
+import math.ray.Sphere
 import math.vector.Vector3
 
 class HitPayload {
-    var hitDistance = Double.POSITIVE_INFINITY
-    var hitPosition = Vector3()
+    var distance = Double.POSITIVE_INFINITY
+    var sphere: Sphere? = null
 
-    var hitTriangle: Triangle? = null
-    var hitEntity: Entity? = null
+    var position = Vector3()
+    var normal = Vector3()
 
-    var interpolatedVertex = Vertex()
-    var pixelColor = Vector3()
+    var throughput = Vector3(1.0)
+    var light = Vector3()
 }
