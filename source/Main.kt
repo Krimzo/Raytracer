@@ -17,6 +17,9 @@ fun main() {
     window.keyboard['r'] = {
         raytracer.reset()
     }
+    window.keyboard['p'] = {
+        raytracer.save("render.png")
+    }
 
     window.keyboard['w'] = {
         scene.camera.moveForward(timer.delta())
@@ -43,7 +46,7 @@ fun main() {
         raytracer.reset()
     }
 
-    window.mouse[3] = {
+    window.mouse[1] = {
         val mousePosition = Vector2(window.mouse.position.x.toDouble(), window.mouse.position.y.toDouble())
         scene.camera.rotate(mousePosition, window.center)
         window.centerMouse()
@@ -63,43 +66,37 @@ fun setupTestScene(): Scene {
     val scene = Scene()
 
     // Materials
-    val orangeMat = Material()
-    orangeMat.albedo = Vector3(Color(220, 150, 105))
-    orangeMat.roughness = 0.1
-    orangeMat.emissionColor = orangeMat.albedo
-    orangeMat.emissionPower = 2.5
+    val material0 = Material()
+    material0.albedo = Vector3(Color(220, 150, 100))
 
-    val greenMat = Material()
-    greenMat.albedo = Vector3(Color(80, 200, 130))
-    greenMat.roughness = 0.2
-
-    val whiteMat = Material()
-    whiteMat.albedo = Vector3(Color.WHITE)
-    greenMat.roughness = 0.5
+    val material1 = Material()
+    material1.albedo = material0.albedo
+    material1.emissionColor = material1.albedo
+    material1.emissionPower = 20.0
 
     // Spheres
+    val sphere0 = Sphere()
+    sphere0.origin = Vector3(0.0, -100.0, 0.0)
+    sphere0.radius = 100.0
+    sphere0.material = material0
+    scene.add(sphere0)
+
     val sphere1 = Sphere()
-    sphere1.origin = Vector3(30.0, 10.0, 0.0)
-    sphere1.radius = 15.0
-    sphere1.material = orangeMat
+    sphere1.origin = Vector3(0.0, 1.0, 0.0)
+    sphere1.radius = 1.0
+    sphere1.material = material0
     scene.add(sphere1)
 
     val sphere2 = Sphere()
-    sphere2.origin = Vector3(0.0, 1.0, 0.0)
-    sphere2.radius = 1.0
-    sphere2.material = greenMat
+    sphere2.origin = Vector3(25.0, 10.0, 0.0)
+    sphere2.radius = 10.0
+    sphere2.material = material1
     scene.add(sphere2)
-
-    val sphere3 = Sphere()
-    sphere3.origin = Vector3(0.0, -1000.0, 0.0)
-    sphere3.radius = 1000.0
-    sphere3.material = whiteMat
-    scene.add(sphere3)
 
     // Camera setup
     val camera = scene.camera
-    camera.position = Vector3(0.0, 2.0, 5.0)
-    camera.forward = -camera.position
+    camera.position = Vector3(-2.68, 2.45, -4.07)
+    camera.forward = Vector3(0.78, -0.22, 0.59)
 
     return scene
 }
