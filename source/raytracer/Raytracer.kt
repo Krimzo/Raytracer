@@ -60,7 +60,7 @@ class Raytracer {
             light = light multiply contribution
 
             ray.origin = payload.position + payload.normal * 0.0001
-            ray.direction = normalize(payload.normal + Random.unitSphere())
+            ray.direction = payload.normal + Random.unitSphere()
         }
         return light
     }
